@@ -87,7 +87,7 @@ mongoose.connect(process.env.DATABASE_URL)
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: process.env.GOOGLE_REDIRECT_URI
   },
   async (accessToken, refreshToken, profile, done) => {
 
@@ -112,6 +112,8 @@ passport.use(new GoogleStrategy({
     }
   }
 ));
+
+
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
