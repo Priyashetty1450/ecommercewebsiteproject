@@ -59,16 +59,21 @@ async function signup(e) {
       setTimeout(() => {
         window.location.href = "/pages/auth/login.html";
       }, 1500);
+
     } else {
       showMessage(data.message);
     }
-  } catch {
+
+  } catch (err) {
+    console.error(err);
     showMessage("Server error");
   }
 }
 
 /* ================= LOGIN ================= */
-async function login() {
+async function login(e) {
+  e.preventDefault();
+
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
 
@@ -85,7 +90,7 @@ async function login() {
 
     const data = await res.json();
 
-    if (res.ok) {
+    if (res.ok && data.token) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
@@ -98,10 +103,13 @@ async function login() {
           window.location.href = "/pages/home/Landing.html";
         }
       }, 1000);
+
     } else {
-      showMessage(data.message);
+      showMessage(data.message || "Login failed");
     }
-  } catch {
+
+  } catch (err) {
+    console.error(err);
     showMessage("Server error");
   }
 }
@@ -113,9 +121,20 @@ function googleLogin() {
 
 /* ================= RESET PAGE LOGIC ================= */
 document.addEventListener("DOMContentLoaded", () => {
+
   const params = new URLSearchParams(window.location.search);
+
+  /* Google token capture */
   const token = params.get("token");
 
+  if (token) {
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", "user");
+
+    window.location.href = "/pages/home/Landing.html";
+  }
+
+  /* Reset password page */
   const emailForm = document.getElementById("emailForm");
   const passwordForm = document.getElementById("passwordForm");
   const pageTitle = document.getElementById("pageTitle");
@@ -147,7 +166,8 @@ async function sendResetLink(event) {
     const data = await res.json();
     showMessage(data.message, "success");
 
-  } catch {
+  } catch (err) {
+    console.error(err);
     showMessage("Server error");
   }
 }
@@ -184,11 +204,13 @@ async function resetPassword(event) {
       setTimeout(() => {
         window.location.href = "/pages/auth/login.html";
       }, 1500);
+
     } else {
       showMessage(data.message);
     }
 
-  } catch {
+  } catch (err) {
+    console.error(err);
     showMessage("Server error");
   }
 }

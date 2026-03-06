@@ -31,9 +31,14 @@ const PORT = process.env.PORT || 5000;
 /* ================= MIDDLEWARE ================= */
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: [
+    process.env.CLIENT_URL,
+    "http://127.0.0.1:5500",
+    "http://localhost:5500"
+  ],
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));

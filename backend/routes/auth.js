@@ -14,8 +14,17 @@ router.post('/signup', async (req, res) => {
   const { username, password, email } = req.body;
 
   try {
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        message: 'All fields required'
+      });
+    }
+
     const existingUser = await User.findOne({
-      $or: [{ username }, { email }]
+      $or: [
+        { username: username.trim() },
+        { email: email.trim().toLowerCase() }
+      ]
     });
 
     if (existingUser) {
@@ -27,8 +36,8 @@ router.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
-      username,
-      email,
+      username: username.trim(),
+      email: email.trim().toLowerCase(),
       password: hashedPassword,
       role: 'user'
     });
@@ -36,12 +45,22 @@ router.post('/signup', async (req, res) => {
     await user.save();
 
     res.status(201).json({
+      success: true,
       message: 'User created successfully'
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Signup Error:", err);
+
+    if (err.code === 11000) {
+      return res.status(400).json({
+        message: 'Username or Email already exists'
+      });
+    }
+
+    res.status(500).json({
+      message: 'Server error'
+    });
   }
 });
 
@@ -51,15 +70,32 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({
+      $or: [
+        { username: username.trim() },
+        { email: username.trim().toLowerCase() }
+      ]
+    });
 
-    if (!user)
-      return res.status(400).json({ message: 'Invalid credentials' });
+    if (!user) {
+      return res.status(400).json({
+        message: 'Invalid credentials'
+      });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({
+        message: 'Use Google login for this account'
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch)
-      return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      return res.status(400).json({
+        message: 'Invalid credentials'
+      });
+    }
 
     const token = jwt.sign(
       {
@@ -71,26 +107,33 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.json({ token, role: user.role });
+    res.json({
+      success: true,
+      token,
+      role: user.role
+    });
 
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+    res.status(500).json({
+      message: 'Server error'
+    });
   }
 });
 
 /* ================= GOOGLE LOGIN ================= */
 
-// Step 1: Redirect to Google
 router.get('/google',
   passport.authenticate('google', {
     scope: ['profile', 'email']
   })
 );
 
-// Step 2: Callback
+/* ================= GOOGLE CALLBACK ================= */
+
 router.get('/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/pages/auth/login.html'
+    failureRedirect: `${process.env.CLIENT_URL}/pages/auth/login.html`
   }),
   (req, res) => {
 
@@ -117,18 +160,16 @@ router.post('/forgot-password', async (req, res) => {
   try {
     const user = await User.findOne({ email });
 
-    // Don't reveal if user exists
     if (!user) {
       return res.json({
-        message: 'If an account with that email exists, a reset link has been sent.'
+        message: 'If an account exists, reset link sent'
       });
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const expiry = Date.now() + 3600000; // 1 hour
 
     user.resetToken = resetToken;
-    user.resetTokenExpiry = expiry;
+    user.resetTokenExpiry = Date.now() + 3600000;
 
     await user.save();
 
@@ -138,12 +179,14 @@ router.post('/forgot-password', async (req, res) => {
     await sendResetEmail(user.email, resetLink);
 
     res.json({
-      message: 'If an account with that email exists, a reset link has been sent.'
+      message: 'Reset link sent successfully'
     });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      message: 'Server error'
+    });
   }
 });
 
@@ -153,7 +196,6 @@ router.post('/reset-password', async (req, res) => {
   const { token, newPassword } = req.body;
 
   try {
-
     const user = await User.findOne({
       resetToken: token,
       resetTokenExpiry: { $gt: Date.now() }
@@ -165,19 +207,22 @@ router.post('/reset-password', async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    user.password = hashedPassword;
+    user.password = await bcrypt.hash(newPassword, 10);
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
 
     await user.save();
 
-    res.json({ message: 'Password reset successful' });
+    res.json({
+      success: true,
+      message: 'Password reset successful'
+    });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      message: 'Server error'
+    });
   }
 });
 
