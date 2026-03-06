@@ -18,9 +18,9 @@ function checkAuth() {
     const role = localStorage.getItem("role");
 
     if (role === "admin") {
-      window.location.href = "../../pages/admin/admin.html";
+      window.location.href = "/pages/admin/admin.html";
     } else {
-      window.location.href = "../../pages/home/Landing.html";
+      window.location.href = "/pages/home/Landing.html";
     }
   }
 }
@@ -57,7 +57,7 @@ async function signup(e) {
       showMessage("Signup successful → Redirecting to login", "success");
 
       setTimeout(() => {
-        window.location.href = "login.html";
+        window.location.href = "/pages/auth/login.html";
       }, 1500);
     } else {
       showMessage(data.message);
@@ -93,9 +93,9 @@ async function login() {
 
       setTimeout(() => {
         if (data.role === "admin") {
-          window.location.href = "../../pages/admin/admin.html";
+          window.location.href = "/pages/admin/admin.html";
         } else {
-          window.location.href = "../../pages/home/Landing.html";
+          window.location.href = "/pages/home/Landing.html";
         }
       }, 1000);
     } else {
@@ -113,7 +113,6 @@ function googleLogin() {
 
 /* ================= RESET PAGE LOGIC ================= */
 document.addEventListener("DOMContentLoaded", () => {
-
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
 
@@ -126,7 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
     emailForm.style.display = "none";
     passwordForm.style.display = "block";
   }
-
 });
 
 /* ================= SEND RESET LINK ================= */
@@ -184,7 +182,7 @@ async function resetPassword(event) {
       showMessage("Password reset successful", "success");
 
       setTimeout(() => {
-        window.location.href = "login.html";
+        window.location.href = "/pages/auth/login.html";
       }, 1500);
     } else {
       showMessage(data.message);
