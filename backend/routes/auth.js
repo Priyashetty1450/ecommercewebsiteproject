@@ -83,7 +83,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    if (!user.password) {
+    if (!user.password && user.isGoogleAuth) {
       return res.status(400).json({
         message: 'Use Google login for this account'
       });
@@ -133,7 +133,8 @@ router.get('/google',
 
 router.get('/google/callback',
   passport.authenticate('google', {
-    failureRedirect: `${process.env.CLIENT_URL}/pages/auth/login.html`
+    failureRedirect: `${process.env.CLIENT_URL}/pages/auth/login.html`,
+    session: true
   }),
   (req, res) => {
 

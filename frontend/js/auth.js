@@ -116,30 +116,33 @@ async function login(e) {
 
 /* ================= GOOGLE LOGIN ================= */
 function googleLogin() {
-  window.location.href = `${API_URL}/google`;
+  window.location.href = "https://ecommercewebsiteproject.onrender.com/api/auth/google";
 }
 
-/* ================= RESET PAGE LOGIC ================= */
+/* ================= PAGE LOAD LOGIC ================= */
 document.addEventListener("DOMContentLoaded", () => {
 
   const params = new URLSearchParams(window.location.search);
 
   /* Google token capture */
-  const token = params.get("token");
+  const googleToken = params.get("token");
 
-  if (token) {
-    localStorage.setItem("token", token);
+  if (googleToken) {
+    localStorage.setItem("token", googleToken);
     localStorage.setItem("role", "user");
 
     window.location.href = "/pages/home/Landing.html";
+    return;
   }
 
   /* Reset password page */
+  const resetToken = params.get("token");
+
   const emailForm = document.getElementById("emailForm");
   const passwordForm = document.getElementById("passwordForm");
   const pageTitle = document.getElementById("pageTitle");
 
-  if (token && passwordForm && emailForm) {
+  if (resetToken && passwordForm && emailForm) {
     pageTitle.innerText = "Set New Password";
     emailForm.style.display = "none";
     passwordForm.style.display = "block";

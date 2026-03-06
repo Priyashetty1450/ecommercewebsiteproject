@@ -44,6 +44,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "google-secret",
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    secure: true,
+    httpOnly: true
+  }
 }));
 
 app.use(passport.initialize());
