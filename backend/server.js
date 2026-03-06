@@ -75,6 +75,7 @@ mongoose.connect(process.env.DATABASE_URL)
 
     await User.create({
       username: process.env.ADMIN_USER,
+      email: process.env.ADMIN_EMAIL,
       password: hashedPassword,
       role: "admin",
     });
@@ -92,7 +93,7 @@ mongoose.connect(process.env.DATABASE_URL)
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "https://ecommercewebsiteproject.onrender.com/api/auth/google/callback"
+    callbackURL: process.env.GOOGLE_REDIRECT_URI
   },
   async (accessToken, refreshToken, profile, done) => {
 
@@ -105,7 +106,8 @@ passport.use(new GoogleStrategy({
         user = await User.create({
           username: profile.displayName,
           email: profile.emails[0].value,
-          password: "google-oauth",
+          googleId: profile.id,
+          isGoogleAuth: true,
           role: "user"
         });
       }
@@ -117,8 +119,6 @@ passport.use(new GoogleStrategy({
     }
   }
 ));
-
-
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -156,8 +156,6 @@ app.get("/health", (req, res) => {
 app.get("/", (req, res) =>
   res.sendFile(path.join(frontendPath, "pages/home/Landing.html"))
 );
-
-/* (All your other page routes stay same) */
 
 app.get("/shop", (req, res) =>
   res.sendFile(path.join(frontendPath, "pages/shop/shop.html"))
@@ -208,5 +206,5 @@ app.use((req, res) => {
 /* ================= START SERVER ================= */
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port :${PORT}`);
+  console.log(`🚀 Server running on port: ${PORT}`);
 });

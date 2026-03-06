@@ -30,8 +30,6 @@ const userSchema = new mongoose.Schema({
     default: 'user'
   },
 
-  /* ================= GOOGLE AUTH ================= */
-
   googleId: {
     type: String,
     unique: true,
@@ -43,8 +41,6 @@ const userSchema = new mongoose.Schema({
     default: false
   },
 
-  /* ================= PASSWORD RESET ================= */
-
   resetToken: {
     type: String
   },
@@ -53,6 +49,8 @@ const userSchema = new mongoose.Schema({
     type: Date
   }
 
-}, { timestamps: true });
+}, {
+  timestamps: true
+});
 
 module.exports = mongoose.model('User', userSchema);
