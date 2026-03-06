@@ -93,7 +93,7 @@ mongoose.connect(process.env.DATABASE_URL)
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_REDIRECT_URI
+    callbackURL: "https://ecommercewebsiteproject.onrender.com/api/auth/google/callback"
   },
   async (accessToken, refreshToken, profile, done) => {
 
