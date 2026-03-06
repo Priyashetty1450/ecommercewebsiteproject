@@ -1,0 +1,173 @@
+/* ================= GLOBAL ================= */
+
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* ================= HEADER ================= */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #fff;
+}
+
+.logo {
+  height: 40px;
+}
+
+/* ================= SEARCH ================= */
+
+.search-bar {
+  padding: 10px 20px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 25px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+/* ================= BREADCRUMB ================= */
+
+.breadcrumb {
+  padding: 10px 20px;
+  color: #777;
+  font-size: 14px;
+}
+
+/* ================= MAIN CONTAINER ================= */
+
+.container {
+  max-width: 700px;
+  margin: 20px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.container h1 {
+  margin-bottom: 10px;
+  color: #8B4513;
+}
+
+.contact-info {
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+/* ================= FORM ================= */
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: #8B4513;
+  outline: none;
+}
+
+.contact-form textarea {
+  resize: none;
+  min-height: 120px;
+}
+
+.contact-form small {
+  color: #777;
+}
+
+/* ================= RECAPTCHA ================= */
+
+.recaptcha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  margin: 20px 0;
+  background: #fff;
+  border-radius: 6px;
+}
+
+/* ================= BUTTON ================= */
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: #556b5d;
+  color: white;
+  border: none;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* ================= TABLET ================= */
+
+@media (max-width: 768px) {
+
+  .container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .search-bar {
+    padding: 10px;
+  }
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 480px) {
+
+  .header {
+    padding: 10px 15px;
+  }
+
+  .logo {
+    height: 35px;
+  }
+
+  .container {
+    margin: 15px;
+    padding: 18px;
+  }
+
+  .container h1 {
+    font-size: 24px;
+  }
+
+  .recaptcha {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  button {
+    font-size: 14px;
+  }
+}

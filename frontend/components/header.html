@@ -1,0 +1,69 @@
+<header>
+  <div class="header-container">
+
+    <!-- LOGO -->
+    <div class="logo">
+      <a href="/pages/home/Landing.html">
+        <img src="/assets/images/logo.jpg" alt="Logo">
+      </a>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search products..."
+        autocomplete="off"
+      >
+      <button id="searchBtn" type="button">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="header-right">
+
+      <!-- CART -->
+      <div class="cart-icon">
+        <a href="/pages/cart/cart.html" class="cart-link">
+          <i class="fas fa-shopping-cart"></i>
+          <span id="cart-count" class="cart-badge">0</span>
+        </a>
+      </div>
+
+      <!-- HAMBURGER -->
+      <div class="mobile-menu-btn" id="mobileMenuBtn">
+        <i id="menuIcon" class="fas fa-bars"></i>
+      </div>
+
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav id="mainNav">
+      <ul>
+
+        <li><a href="/pages/home/Landing.html">Home</a></li>
+        <li><a href="/pages/shop/shop.html">Shop</a></li>
+        <li><a href="/pages/info/Service.html">Service</a></li>
+        <li><a href="/pages/info/About.html">About Us</a></li>
+        <li><a href="/pages/contact/Contact-us.html">Contact</a></li>
+        <li><a href="/pages/orders/track-order.html">Track Order</a></li>
+
+        <li id="login-btn">
+          <a href="/pages/auth/login.html">Login</a>
+        </li>
+
+        <li id="signup-btn">
+          <a href="/pages/auth/signup.html">Signup</a>
+        </li>
+
+        <li id="logout-btn" style="display:none;">
+          <a href="#" id="logout-link">Logout</a>
+        </li>
+
+      </ul>
+    </nav>
+
+  </div>
+</header>
