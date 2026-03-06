@@ -105,7 +105,7 @@ router.get('/google/callback',
       { expiresIn: '7d' }
     );
 
-    res.redirect(`/pages/home/Landing.html?token=${token}`);
+    res.redirect(`${process.env.CLIENT_URL}/pages/home/Landing.html?token=${token}`);
   }
 );
 

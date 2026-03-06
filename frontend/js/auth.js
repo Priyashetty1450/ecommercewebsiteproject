@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = "https://ecommercewebsiteproject.onrender.com/api/auth";
 
 /* ================= MESSAGE ================= */
 function showMessage(text, type = "error") {

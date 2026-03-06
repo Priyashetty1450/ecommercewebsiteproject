@@ -178,9 +178,9 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       transactionId,
       shippingAddress,
       shippingMethod,
-      status: "Pending",
+      status: "Order Placed",
       statusHistory: [{
-        status: "Pending",
+        status: "Order Placed",
         timestamp: new Date()
       }]
 

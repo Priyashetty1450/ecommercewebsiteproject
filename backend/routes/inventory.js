@@ -1,25 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const item = require('../models/item'); // Import the Schema
+const Item = require('../models/item');
 
-// 1. GET ALL ITEMS
-// URL: http://localhost:5000/api/inventory
 router.get('/', async (req, res) => {
     try {
-        const items = await item.find();
+        const items = await Item.find();
         res.json(items);
     } catch (err) {
         res.status(500).json({ message: "Error fetching inventory" });
     }
 });
 
-// 2. GET SINGLE ITEM BY ID
-// URL: http://localhost:5000/api/inventory/1
 router.get('/:id', async (req, res) => {
     try {
-        const item = await item.findOne({ id: req.params.id });
-        if (!item) return res.status(404).json({ message: "Item not found" });
-        res.json(item);
+        const foundItem = await Item.findOne({ id: req.params.id });
+
+        if (!foundItem) {
+            return res.status(404).json({ message: "Item not found" });
+        }
+
+        res.json(foundItem);
+
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
