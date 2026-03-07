@@ -27,7 +27,6 @@ const authMiddleware = (req, res, next) => {
   }
 
   try {
-
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || 'your-secret-key'
@@ -182,20 +181,24 @@ router.post('/checkout', authMiddleware, async (req, res) => {
 
     await Cart.findOneAndDelete({ userId: req.userId });
 
-    /* ================= SEND NOTIFICATIONS FAST ================= */
-
-    sendOrderConfirmationEmail(savedOrder);
-
-    if (phone) {
-      sendOrderConfirmationSMS(savedOrder);
-    }
-
-    /* ================= RESPONSE ================= */
+    /* ================= SEND RESPONSE FIRST ================= */
 
     res.status(201).json({
       success: true,
       order: savedOrder
     });
+
+    /* ================= BACKGROUND EMAIL ================= */
+
+    sendOrderConfirmationEmail(savedOrder)
+      .then(result => console.log("📧 Email sent:", result))
+      .catch(err => console.error("❌ Email failed:", err));
+
+    if (phone) {
+      sendOrderConfirmationSMS(savedOrder)
+        .then(result => console.log("📱 SMS sent:", result))
+        .catch(err => console.error("❌ SMS failed:", err));
+    }
 
   } catch (err) {
 
