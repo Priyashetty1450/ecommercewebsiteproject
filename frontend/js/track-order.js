@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
 
 const STATUS_ORDER = [
   "Order Placed",
@@ -60,11 +60,6 @@ async function trackOrder() {
 
     let url = `${API_BASE}/orders/track/${orderId}`;
 
-    if (!getToken()) {
-      if (!email) return showError("Enter your email");
-      url += `?email=${encodeURIComponent(email)}`;
-    }
-
     const res = await fetch(url, {
       headers: getToken()
         ? { Authorization: `Bearer ${getToken()}` }
@@ -84,11 +79,8 @@ async function trackOrder() {
     startLiveTracking(orderId, email);
 
   } catch {
-
     showError("Server error. Try again.");
-
   }
-
 }
 
 /* ================= RENDER ORDER ================= */
@@ -102,8 +94,6 @@ function renderOrder(order) {
   $("resultDate").innerText = formatDate(order.createdAt);
   $("resultTotal").innerText = `₹${order.total || 0}`;
 
-  /* PRODUCTS */
-
   if (order.items && order.items.length) {
 
     $("resultProducts").innerText =
@@ -116,10 +106,7 @@ function renderOrder(order) {
 
     $("resultProducts").innerText = order.product || "N/A";
     $("resultQuantity").innerText = order.quantity || 0;
-
   }
-
-  /* ADDRESS */
 
   if (order.shippingAddress) {
 
@@ -129,11 +116,9 @@ function renderOrder(order) {
       `${a.street || ""}, ${a.city || ""}, ${a.state || ""} - ${a.zipCode || ""}`;
 
     $("shippingAddressSection").style.display = "block";
-
   }
 
   renderTimeline(order);
-
 }
 
 /* ================= TIMELINE ================= */
@@ -165,7 +150,6 @@ function renderTimeline(order) {
       `;
 
       container.appendChild(div);
-
     });
 
   } else {
@@ -190,40 +174,28 @@ function renderTimeline(order) {
       `;
 
       container.appendChild(div);
-
     });
-
   }
-
 }
 
 /* ================= LIVE TRACKING ================= */
 
-function startLiveTracking(orderId, email) {
+function startLiveTracking(orderId) {
 
   if (pollingInterval) {
     clearInterval(pollingInterval);
   }
 
   pollingInterval = setInterval(() => {
-
-    silentRefresh(orderId, email);
-
+    silentRefresh(orderId);
   }, 15000);
-
 }
 
-async function silentRefresh(orderId, email) {
+async function silentRefresh(orderId) {
 
   try {
 
-    let url = `${API_BASE}/orders/track/${orderId}`;
-
-    if (!getToken()) {
-      url += `?email=${encodeURIComponent(email)}`;
-    }
-
-    const res = await fetch(url, {
+    const res = await fetch(`${API_BASE}/orders/track/${orderId}`, {
       headers: getToken()
         ? { Authorization: `Bearer ${getToken()}` }
         : {}
@@ -236,17 +208,14 @@ async function silentRefresh(orderId, email) {
     }
 
   } catch {}
-
 }
 
 /* ================= ENTER KEY ================= */
 
 $("orderIdInput")?.addEventListener("keypress", (e) => {
-
   if (e.key === "Enter") {
     trackOrder();
   }
-
 });
 
 /* ================= INIT ================= */
@@ -257,11 +226,7 @@ window.addEventListener("load", () => {
   const orderId = params.get("orderId");
 
   if (orderId) {
-
     $("orderIdInput").value = orderId;
-
     trackOrder();
-
   }
-
 });
