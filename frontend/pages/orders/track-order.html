@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -29,7 +28,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
 <div class="track-form">
 
 <div class="input-group">
-<input type="email" id="emailInput" placeholder="Enter your email">
+<input type="email" id="emailInput" placeholder="Enter your email (optional)">
 </div>
 
 <div class="input-group">
@@ -42,17 +41,11 @@ Track Order
 
 </div>
 
-<!-- LOADER -->
-
 <div id="loader" class="loader" style="display:none">
 Loading order details...
 </div>
 
-<!-- ERROR -->
-
 <div class="error-message" id="errorMessage" style="display:none"></div>
-
-<!-- RESULT -->
 
 <div class="order-result" id="orderResult" style="display:none">
 
@@ -94,13 +87,11 @@ Loading order details...
 
 <script>
 
-const API_BASE = "/api";
+const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
 
 const loader = document.getElementById("loader");
 const errorBox = document.getElementById("errorMessage");
 const resultBox = document.getElementById("orderResult");
-
-/* ================= UI STATES ================= */
 
 function showLoader(){
 loader.style.display="block";
@@ -119,11 +110,8 @@ loader.style.display="none";
 resultBox.style.display="block";
 }
 
-/* ================= TRACK ORDER ================= */
-
 async function trackOrder(){
 
-const email = document.getElementById("emailInput").value.trim();
 const orderId = document.getElementById("orderIdInput").value.trim();
 
 if(!orderId){
@@ -135,15 +123,13 @@ showLoader();
 try{
 
 const res = await fetch(`${API_BASE}/orders/track/${orderId}`);
+const data = await res.json();
 
 if(!res.ok){
-return showError("Order not found");
+return showError(data.message || "Order not found");
 }
 
-const order = await res.json();
-
-renderOrder(order);
-
+renderOrder(data);
 showResult();
 
 }catch(err){
@@ -155,13 +141,10 @@ showError("Server error");
 
 }
 
-/* ================= RENDER ORDER ================= */
-
 function renderOrder(order){
 
 document.getElementById("resultOrderId").innerText = order.orderId;
-
-document.getElementById("resultCustomer").innerText = order.customer;
+document.getElementById("resultCustomer").innerText = order.customer || "N/A";
 
 document.getElementById("resultDate").innerText =
 new Date(order.createdAt).toLocaleDateString("en-IN");
@@ -169,12 +152,10 @@ new Date(order.createdAt).toLocaleDateString("en-IN");
 document.getElementById("resultTotal").innerText = "₹" + order.total;
 
 document.getElementById("resultProducts").innerText =
-order.items.map(i=>i.name).join(", ");
+order.items?.map(i=>i.name).join(", ") || "N/A";
 
 document.getElementById("resultQuantity").innerText =
-order.items.reduce((sum,i)=>sum+i.quantity,0);
-
-/* ADDRESS */
+order.items?.reduce((sum,i)=>sum+i.quantity,0) || 0;
 
 if(order.shippingAddress){
 
@@ -188,13 +169,9 @@ ${order.shippingAddress.state}
 
 }
 
-/* TIMELINE */
-
 renderTimeline(order.status);
 
 }
-
-/* ================= TIMELINE ================= */
 
 function renderTimeline(status){
 
@@ -212,12 +189,8 @@ timeline.innerHTML="";
 
 const index = steps.indexOf(status);
 
-/* progress class for colored line */
-
 timeline.className =
 "timeline progress-" + (index >= 0 ? index + 1 : 1);
-
-/* create steps */
 
 steps.forEach(step=>{
 
@@ -236,8 +209,6 @@ timeline.appendChild(div);
 });
 
 }
-
-/* ================= AUTO LOAD FROM SUCCESS PAGE ================= */
 
 window.addEventListener("load",()=>{
 
