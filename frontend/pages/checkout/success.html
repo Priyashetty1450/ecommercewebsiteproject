@@ -42,7 +42,10 @@ justify-content:center;
 margin:0 auto 20px;
 }
 
-.success-icon i{font-size:40px;color:white;}
+.success-icon i{
+font-size:40px;
+color:white;
+}
 
 .order-details{
 background:#f8f9fa;
@@ -63,7 +66,9 @@ margin:5px;
 font-weight:600;
 }
 
-.btn-secondary{background:#6c757d;}
+.btn-secondary{
+background:#6c757d;
+}
 
 .loader{
 text-align:center;
@@ -104,7 +109,7 @@ padding:40px;
 
 <script>
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
 
 const params = new URLSearchParams(window.location.search);
 const orderId = params.get("orderId");
@@ -154,13 +159,14 @@ async function loadOrder() {
         day:"numeric"
       });
 
-    /* CLEAR CART AFTER SUCCESS */
+    document.querySelector(".btn-secondary").href =
+      `../orders/track-order.html?orderId=${data.orderId}`;
+
     localStorage.removeItem("cart");
 
   } catch {
 
     alert("Failed to load order");
-
     window.location.href = "../home/Landing.html";
   }
 }
