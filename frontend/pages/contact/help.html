@@ -6,121 +6,236 @@
 
 <title>Help & Support</title>
 
-<!-- GLOBAL CSS -->
 <link rel="stylesheet" href="../../css/ii.css">
 
-<!-- FONT AWESOME -->
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-.guide{
-max-width:900px;
-margin:40px auto;
-padding:30px;
-background:#fff;
-border-radius:12px;
-box-shadow:0 4px 20px rgba(0,0,0,0.1);
-line-height:1.7;
+body{
+background:#f8f9fa;
+font-family:Segoe UI, sans-serif;
 }
 
 .hero-help{
 text-align:center;
-padding:40px 20px 10px;
+padding:60px 20px 30px;
+background:linear-gradient(135deg,#8B4513,#A0522D);
+color:white;
 }
 
 .hero-help h1{
+font-size:38px;
+margin-bottom:10px;
+}
+
+.hero-help p{
+font-size:18px;
+opacity:.9;
+}
+
+.guide{
+max-width:1000px;
+margin:40px auto;
+padding:35px;
+background:#fff;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+.guide h3{
+color:#8B4513;
+margin-bottom:20px;
+font-size:28px;
+}
+
+.guide-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.guide-card{
+background:#f9f9f9;
+padding:20px;
+border-radius:12px;
+border-left:4px solid #8B4513;
+}
+
+.guide-card h4{
+margin-bottom:10px;
+color:#333;
+}
+
+.section-title{
+text-align:center;
+font-size:30px;
+margin:50px 0 25px;
+color:#8B4513;
+}
+
+.category-grid{
+max-width:1000px;
+margin:auto;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+padding:0 20px;
+}
+
+.category-card{
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 8px 25px rgba(0,0,0,0.08);
+text-align:center;
+transition:.3s;
+}
+
+.category-card:hover{
+transform:translateY(-5px);
+}
+
+.category-card i{
+font-size:35px;
+color:#8B4513;
+margin-bottom:15px;
+}
+
+.resources{
+max-width:800px;
+margin:50px auto;
+padding:0 20px 50px;
+}
+
+.resource-card{
+background:white;
+padding:30px;
+border-radius:15px;
+box-shadow:0 8px 25px rgba(0,0,0,0.08);
+text-align:center;
+}
+
+.resource-card h3{
 color:#8B4513;
 margin-bottom:10px;
+}
+
+.btn{
+display:inline-block;
+margin-top:15px;
+padding:14px 28px;
+background:#8B4513;
+color:white;
+text-decoration:none;
+border-radius:8px;
+font-weight:600;
+transition:.3s;
+}
+
+.btn:hover{
+background:#6f3410;
 }
 </style>
 </head>
 
 <body>
 
-<!-- GLOBAL NAVBAR -->
 <div id="header"></div>
 
-<!-- HERO -->
 <section class="hero-help">
 <h1>Help & Support</h1>
-<p>Find answers to common questions and get support for your orders.</p>
+<p>Everything you need to use our platform smoothly and efficiently.</p>
 </section>
 
-<!-- GUIDE -->
-<div class="guide">
+<section class="guide">
 
-<h3>🛒 User Guide – Website</h3>
+<h3>User Guide</h3>
 
+<div class="guide-grid">
+
+<div class="guide-card">
 <h4>1️⃣ Home Page</h4>
-<p>Displays featured products, categories, search bar and navigation menu.</p>
+<p>Explore featured products, categories, and search options.</p>
+</div>
 
-<h4>2️⃣ User Registration</h4>
-<p>Click Sign Up → Enter details → Account created.</p>
+<div class="guide-card">
+<h4>2️⃣ Registration</h4>
+<p>Create your account using email and password.</p>
+</div>
 
-<h4>3️⃣ User Login</h4>
-<p>Login using registered email and password.</p>
+<div class="guide-card">
+<h4>3️⃣ Login</h4>
+<p>Secure login with registered credentials.</p>
+</div>
 
+<div class="guide-card">
 <h4>4️⃣ Browse Products</h4>
-<p>Select category → Apply filters → View product details.</p>
+<p>Use filters and categories to find products.</p>
+</div>
 
+<div class="guide-card">
 <h4>5️⃣ Product Details</h4>
-<p>Check description, price, reviews → Add to cart or Buy now.</p>
+<p>Check description, price, and stock details.</p>
+</div>
 
-<h4>6️⃣ Add to Cart</h4>
-<p>Update quantity or remove items → Proceed to checkout.</p>
+<div class="guide-card">
+<h4>6️⃣ Cart</h4>
+<p>Add products, update quantity, remove items.</p>
+</div>
 
-<h4>7️⃣ Checkout & Payment</h4>
-<p>Enter shipping → Choose payment → Confirm order.</p>
+<div class="guide-card">
+<h4>7️⃣ Checkout</h4>
+<p>Enter shipping details and payment method.</p>
+</div>
 
-<h4>8️⃣ Order Tracking</h4>
-<p>Go to Track Order → View delivery status.</p>
-
-<h4>9️⃣ Logout</h4>
-<p>Click profile → Logout securely.</p>
+<div class="guide-card">
+<h4>8️⃣ Track Order</h4>
+<p>Track live delivery status using Order ID.</p>
+</div>
 
 </div>
 
-<!-- HELP CARDS -->
-<section class="categories">
+</section>
+
 <h2 class="section-title">User Help</h2>
 
 <div class="category-grid">
 
 <div class="category-card">
+<i class="fa fa-cart-shopping"></i>
 <h3>How to Order</h3>
-<p>Browse → Add to cart → Checkout securely.</p>
+<p>Browse → Add to Cart → Checkout.</p>
 </div>
 
 <div class="category-card">
+<i class="fa fa-truck"></i>
 <h3>Shipping Info</h3>
-<p>Know delivery timelines and shipping methods.</p>
+<p>View delivery timeline and shipping options.</p>
 </div>
 
 <div class="category-card">
+<i class="fa fa-rotate-left"></i>
 <h3>Return Policy</h3>
-<p>Easy return & exchange process.</p>
+<p>Simple return and exchange process.</p>
 </div>
 
 <div class="category-card">
+<i class="fa fa-headset"></i>
 <h3>Contact Support</h3>
-<p>Reach our customer support anytime.</p>
+<p>Support available anytime for help.</p>
 </div>
 
 </div>
-</section>
 
-<!-- RESOURCES -->
-<section class="featured">
+<section class="resources">
 
 <h2 class="section-title">Resources</h2>
 
-<div class="product-grid">
-
-<div class="product-card">
+<div class="resource-card">
 
 <h3>Download Introduction PPT</h3>
-<p>Click below to download project introduction presentation.</p>
+<p>Access project presentation for detailed overview.</p>
 
 <a href="../../assets/docs/INTRODUCTION.pptx"
 download
@@ -130,17 +245,11 @@ class="btn">
 
 </div>
 
-</div>
-
 </section>
 
-<!-- LOAD GLOBAL HEADER -->
 <script src="../../js/loadHeader.js"></script>
 
-<!-- FOOTER -->
 <div id="footer"></div>
-
-<!-- LOAD FOOTER -->
 <script src="../../js/loadFooter.js"></script>
 
 </body>
