@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
 let cartData = null;
 
 /* ================= AUTH TOKEN ================= */
@@ -22,6 +22,7 @@ function showLoader() {
 
 /* ================= FETCH CART ================= */
 async function fetchCart() {
+
   if (!getToken()) return;
 
   try {
@@ -50,6 +51,7 @@ async function fetchCart() {
 
 /* ================= RENDER CART ================= */
 function renderCart() {
+
   const container = document.getElementById("cart-items");
   const summary = document.getElementById("cart-summary");
   const empty = document.getElementById("empty-cart");
@@ -72,11 +74,8 @@ function renderCart() {
   cartData.items.forEach(item => {
 
     const product = item.productId || {};
-
     const productId = product._id || item.productId;
-
     const stock = product.stock ?? "N/A";
-
     const itemTotal = item.price * item.quantity;
 
     totalItems += item.quantity;
@@ -175,6 +174,7 @@ async function removeItem(productId) {
 
 /* ================= CLEAR CART ================= */
 async function clearCart() {
+
   if (!confirm("Clear cart?")) return;
 
   await fetch(`${API_BASE}/cart`, {
@@ -189,6 +189,7 @@ async function clearCart() {
 
 /* ================= CHECKOUT ================= */
 function goToCheckout() {
+
   if (!cartData || cartData.items.length === 0) {
     showToast("Cart is empty", "error");
     return;
@@ -197,7 +198,7 @@ function goToCheckout() {
   window.location.href = "/pages/checkout/checkout.html";
 }
 
-/* ================= BADGE UPDATE ================= */
+/* ================= BADGE ================= */
 function updateCartBadge() {
 
   const badge = document.getElementById("cart-count");
@@ -208,11 +209,6 @@ function updateCartBadge() {
 
   badge.innerText = count;
 }
-
-/* ================= AUTO REFRESH ================= */
-setInterval(() => {
-  if (getToken()) fetchCart();
-}, 30000);
 
 /* ================= INIT ================= */
 window.addEventListener("DOMContentLoaded", fetchCart);
