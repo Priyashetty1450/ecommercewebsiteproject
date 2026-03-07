@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const { calculateTax } = require('../utils/taxCalculator');
 const { calculateShipping, determineZone } = require('../utils/shippingCalculator');
 const { initiatePayment, processPayment } = require('../utils/paymentGateway');
+
 const {
   sendOrderConfirmationEmail,
   sendOrderConfirmationSMS,
@@ -15,8 +16,8 @@ const {
   sendRefundConfirmationEmail
 } = require('../utils/notificationService');
 
+/* ================= AUTH MIDDLEWARE ================= */
 
-// ================= AUTH MIDDLEWARE =================
 const authMiddleware = (req, res, next) => {
 
   const token = req.headers.authorization?.split(' ')[1];
@@ -38,33 +39,23 @@ const authMiddleware = (req, res, next) => {
     next();
 
   } catch {
-
     return res.status(401).json({ message: 'Invalid token' });
-
   }
-
 };
 
+/* ================= GET ALL ORDERS ================= */
 
-// ================= GET ALL ORDERS (ADMIN) =================
 router.get('/', async (req, res) => {
-
   try {
-
     const orders = await Order.find().sort({ createdAt: -1 });
-
     res.json(orders);
-
-  } catch (err) {
-
+  } catch {
     res.status(500).json({ message: "Failed to fetch orders" });
-
   }
-
 });
 
+/* ================= CALCULATE TOTALS ================= */
 
-// ================= CALCULATE TOTALS =================
 router.post('/calculate-totals', async (req, res) => {
 
   const { items, shippingAddress, shippingMethod, couponCode } = req.body;
@@ -74,7 +65,6 @@ router.post('/calculate-totals', async (req, res) => {
   items.forEach(i => subtotal += i.price * i.quantity);
 
   const zone = determineZone(shippingAddress?.state || 'KA');
-
   const shippingData = calculateShipping(subtotal, items.length, zone);
 
   let shippingCharge = shippingData.shippingCharge;
@@ -99,11 +89,10 @@ router.post('/calculate-totals', async (req, res) => {
     discount,
     total
   });
-
 });
 
+/* ================= CHECKOUT ================= */
 
-// ================= CHECKOUT =================
 router.post('/checkout', authMiddleware, async (req, res) => {
 
   try {
@@ -124,15 +113,12 @@ router.post('/checkout', authMiddleware, async (req, res) => {
     } = req.body;
 
     const items = cart.items;
-
-    let subtotal = cart.totalBill;
+    const subtotal = cart.totalBill;
 
     const zone = determineZone(shippingAddress?.state || 'KA');
-
     const shippingData = calculateShipping(subtotal, items.length, zone);
 
     const tax = calculateTax(subtotal).taxAmount;
-
     const total = subtotal + shippingData.shippingCharge + tax;
 
     const orderId = 'ORD-' + Date.now();
@@ -153,16 +139,12 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       const result = await processPayment(paymentId, {});
 
       if (result.success) {
-
         paymentStatus = 'completed';
         transactionId = result.transactionId;
-
       }
-
     }
 
     const order = new Order({
-
       orderId,
       customer,
       email,
@@ -183,33 +165,32 @@ router.post('/checkout', authMiddleware, async (req, res) => {
         status: "Order Placed",
         timestamp: new Date()
       }]
-
     });
 
     const savedOrder = await order.save();
 
+    /* ================= REDUCE STOCK ================= */
 
-    // ================= REDUCE STOCK =================
     for (const item of items) {
-
       await Product.findByIdAndUpdate(
         item.productId,
         { $inc: { stock: -item.quantity } }
       );
-
     }
 
+    /* ================= CLEAR CART ================= */
 
-    // ================= CLEAR CART =================
     await Cart.findOneAndDelete({ userId: req.userId });
 
+    /* ================= SEND NOTIFICATIONS FAST ================= */
 
-    // ================= SEND NOTIFICATIONS =================
-    await sendOrderConfirmationEmail(savedOrder);
+    sendOrderConfirmationEmail(savedOrder);
 
     if (phone) {
-      await sendOrderConfirmationSMS(savedOrder);
+      sendOrderConfirmationSMS(savedOrder);
     }
+
+    /* ================= RESPONSE ================= */
 
     res.status(201).json({
       success: true,
@@ -224,13 +205,11 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       message: err.message,
       success: false
     });
-
   }
-
 });
 
+/* ================= TRACK ORDER ================= */
 
-// ================= TRACK ORDER =================
 router.get('/track/:orderId', async (req, res) => {
 
   try {
@@ -240,27 +219,22 @@ router.get('/track/:orderId', async (req, res) => {
     });
 
     if (!order) {
-
       return res.status(404).json({
         message: "Order not found"
       });
-
     }
 
     res.json(order);
 
-  } catch (err) {
-
+  } catch {
     res.status(500).json({
       message: "Server error"
     });
-
   }
-
 });
 
+/* ================= UPDATE STATUS ================= */
 
-// ================= UPDATE ORDER STATUS (ADMIN) =================
 router.put('/status/:orderId', async (req, res) => {
 
   try {
@@ -272,11 +246,9 @@ router.put('/status/:orderId', async (req, res) => {
     });
 
     if (!order) {
-
       return res.status(404).json({
         message: "Order not found"
       });
-
     }
 
     order.status = status;
@@ -286,16 +258,14 @@ router.put('/status/:orderId', async (req, res) => {
     }
 
     order.statusHistory.push({
-
       status,
       note: note || "",
       timestamp: new Date()
-
     });
 
     await order.save();
 
-    await sendStatusUpdateEmail(order, status);
+    sendStatusUpdateEmail(order, status);
 
     res.json({
       success: true,
@@ -303,43 +273,27 @@ router.put('/status/:orderId', async (req, res) => {
       order
     });
 
-  } catch (error) {
-
-    console.error(error);
-
+  } catch {
     res.status(500).json({
       success: false,
       message: "Server error"
     });
-
   }
-
 });
 
+/* ================= DELETE ORDER ================= */
 
-// ================= DELETE ORDER =================
 router.delete('/:id', async (req, res) => {
-
   try {
-
     await Order.findByIdAndDelete(req.params.id);
-
-    res.json({
-      message: "Order deleted"
-    });
-
+    res.json({ message: "Order deleted" });
   } catch {
-
-    res.status(500).json({
-      message: "Delete failed"
-    });
-
+    res.status(500).json({ message: "Delete failed" });
   }
-
 });
 
+/* ================= CANCEL ORDER ================= */
 
-// ================= CANCEL ORDER =================
 router.put('/cancel/:orderId', async (req, res) => {
 
   const order = await Order.findOne({
@@ -359,11 +313,10 @@ router.put('/cancel/:orderId', async (req, res) => {
     success: true,
     order
   });
-
 });
 
+/* ================= REFUND ================= */
 
-// ================= REFUND =================
 router.post('/:orderId/refund', async (req, res) => {
 
   const order = await Order.findOne({
@@ -379,13 +332,12 @@ router.post('/:orderId/refund', async (req, res) => {
 
   await order.save();
 
-  await sendRefundConfirmationEmail(order, order.total);
+  sendRefundConfirmationEmail(order, order.total);
 
   res.json({
     success: true,
     order
   });
-
 });
 
 module.exports = router;

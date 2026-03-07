@@ -26,8 +26,8 @@ function formatDate(dateString) {
 /* ================= UI STATES ================= */
 
 function showLoader() {
-  $("orderResult").classList.remove("active");
-  $("errorMessage").classList.remove("active");
+  $("orderResult")?.classList.remove("active");
+  $("errorMessage")?.classList.remove("active");
 }
 
 function showError(msg) {
@@ -54,7 +54,6 @@ async function trackOrder() {
   try {
 
     const res = await fetch(`${API_BASE}/orders/track/${orderId}`);
-
     const data = await res.json();
 
     if (!res.ok) {
@@ -65,7 +64,8 @@ async function trackOrder() {
     renderOrder(data);
     startLiveTracking(orderId);
 
-  } catch {
+  } catch (err) {
+    console.error(err);
     showError("Server error. Try again.");
   }
 }
@@ -189,7 +189,9 @@ async function silentRefresh(orderId) {
       renderTimeline(data);
     }
 
-  } catch {}
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 /* ================= ENTER KEY ================= */
