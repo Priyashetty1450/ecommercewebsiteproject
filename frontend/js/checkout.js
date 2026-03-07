@@ -1,5 +1,3 @@
-/* ================= CONFIG ================= */
-
 const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
 
 const state = {
@@ -300,6 +298,7 @@ async function createOrder(shipping, method, paymentId = null) {
       phone: shipping.phone,
       items: state.cart,
       shippingAddress: shipping,
+      shippingMethod: state.shippingMethod,
       paymentMethod: method,
       paymentId,
       ...state.totals
@@ -309,10 +308,8 @@ async function createOrder(shipping, method, paymentId = null) {
   setLoading(false);
 
   if (data.success) {
-
     window.location.href =
       `${window.location.origin}/pages/checkout/success.html?orderId=${data.order.orderId}`;
-
   } else {
     throw new Error("Order failed");
   }
