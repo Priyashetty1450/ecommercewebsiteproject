@@ -73,8 +73,8 @@ function renderCart() {
 
   cartData.items.forEach(item => {
 
-    const product = item.productId || {};
-    const productId = product._id || item.productId;
+    const product = typeof item.productId === "object" ? item.productId : {};
+    const productId = item.productId?._id || item.productId;
     const stock = product.stock ?? "N/A";
     const itemTotal = item.price * item.quantity;
 
@@ -121,7 +121,7 @@ function renderCart() {
 async function changeQty(productId, delta) {
 
   const item = cartData.items.find(i =>
-    (i.productId._id || i.productId) === productId
+    ((i.productId?._id || i.productId) + "") === productId
   );
 
   if (!item) return;
@@ -211,4 +211,6 @@ function updateCartBadge() {
 }
 
 /* ================= INIT ================= */
-window.addEventListener("DOMContentLoaded", fetchCart);
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(fetchCart, 500);
+});
