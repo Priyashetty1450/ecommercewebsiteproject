@@ -14,7 +14,7 @@ function showMessage(text, type = "error") {
 function checkAuth() {
   const token = localStorage.getItem("token");
 
-  if (token) {
+  if (token && token !== "undefined" && token !== "null") {
     const role = localStorage.getItem("role");
 
     if (role === "admin") {
@@ -27,8 +27,7 @@ function checkAuth() {
 
 /* ================= LOGOUT ================= */
 function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
+  localStorage.clear();
   window.location.href = "/pages/auth/login.html";
 }
 
@@ -64,8 +63,7 @@ async function signup(e) {
       showMessage(data.message);
     }
 
-  } catch (err) {
-    console.error(err);
+  } catch {
     showMessage("Server error");
   }
 }
@@ -91,6 +89,7 @@ async function login(e) {
     const data = await res.json();
 
     if (res.ok && data.token) {
+
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
@@ -108,8 +107,7 @@ async function login(e) {
       showMessage(data.message || "Login failed");
     }
 
-  } catch (err) {
-    console.error(err);
+  } catch {
     showMessage("Server error");
   }
 }
@@ -119,12 +117,11 @@ function googleLogin() {
   window.location.href = "https://ecommercewebsiteproject.onrender.com/api/auth/google";
 }
 
-/* ================= PAGE LOAD LOGIC ================= */
+/* ================= PAGE LOAD ================= */
 document.addEventListener("DOMContentLoaded", () => {
 
   const params = new URLSearchParams(window.location.search);
 
-  /* Google token capture */
   const googleToken = params.get("token");
 
   if (googleToken) {
@@ -135,7 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  /* Reset password page */
   const resetToken = params.get("token");
 
   const emailForm = document.getElementById("emailForm");
@@ -169,8 +165,7 @@ async function sendResetLink(event) {
     const data = await res.json();
     showMessage(data.message, "success");
 
-  } catch (err) {
-    console.error(err);
+  } catch {
     showMessage("Server error");
   }
 }
@@ -212,8 +207,7 @@ async function resetPassword(event) {
       showMessage(data.message);
     }
 
-  } catch (err) {
-    console.error(err);
+  } catch {
     showMessage("Server error");
   }
 }
@@ -222,9 +216,11 @@ async function resetPassword(event) {
 function requireLogin() {
   const token = localStorage.getItem("token");
 
-  if (!token) {
+  if (!token || token === "undefined" || token === "null") {
+    localStorage.clear();
     alert("Please login first");
     window.location.href = "/pages/auth/login.html";
+    return;
   }
 }
 
@@ -242,7 +238,7 @@ function requireAdmin() {
 function requireGuest() {
   const token = localStorage.getItem("token");
 
-  if (token) {
+  if (token && token !== "undefined" && token !== "null") {
     window.location.href = "/pages/home/Landing.html";
   }
 }
