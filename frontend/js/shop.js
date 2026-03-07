@@ -1,11 +1,11 @@
 /* ================= CONFIG ================= */
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
 
 let inventory = [];
 let activeItem = null;
 let currentFilter = "all";
-let searchQuery = null;   // ⭐ ADDED FOR SEARCH
+let searchQuery = null;
 
 
 /* ================= AUTH ================= */
@@ -24,6 +24,7 @@ function requireLogin() {
 
     return false;
   }
+
   return true;
 }
 
@@ -33,6 +34,7 @@ function requireLogin() {
 function showToast(message, type = "success") {
 
   const toast = document.createElement("div");
+
   toast.className = `toast ${type}`;
   toast.innerText = message;
 
@@ -88,6 +90,7 @@ async function loadProducts() {
   showLoader();
 
   const data = await apiRequest(`${API_BASE}/products`);
+
   if (!data) return;
 
   inventory = data.map(p => ({
@@ -100,7 +103,6 @@ async function loadProducts() {
     stock: p.stock ?? 0
   }));
 
-  // ⭐ READ SEARCH QUERY FROM URL
   const params = new URLSearchParams(window.location.search);
   searchQuery = params.get("search");
 
@@ -116,12 +118,10 @@ function renderProducts() {
 
   let filtered = inventory;
 
-  // Category Filter
   if (currentFilter !== "all") {
     filtered = filtered.filter(p => p.category === currentFilter);
   }
 
-  // ⭐ SEARCH FILTER
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
 
@@ -248,7 +248,6 @@ async function addToCart() {
   if (!res) return;
 
   showToast("Item added to cart");
-  updateCartBadge();
   closeModal("pModal");
 }
 

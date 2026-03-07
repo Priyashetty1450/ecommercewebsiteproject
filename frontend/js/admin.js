@@ -1,127 +1,107 @@
-let products = JSON.parse(localStorage.getItem("products")) || [];
+let products = [];
 let orders = [];
 
+const API_URL = "https://ecommercewebsiteproject.onrender.com";
+
 const ORDER_STATUSES = [
-"Order Placed",
-"Order Packed",
-"Order Shipped",
-"Out for Delivery",
-"Delivered",
-"Cancelled",
-"Refunded"
+  "Order Placed",
+  "Order Packed",
+  "Order Shipped",
+  "Out for Delivery",
+  "Delivered",
+  "Cancelled",
+  "Refunded"
 ];
+
+/* ================= LOAD PRODUCTS ================= */
+
+async function loadProducts() {
+  try {
+    const res = await fetch(`${API_URL}/api/products`);
+    products = await res.json();
+
+    renderProducts();
+    updateSummary();
+
+  } catch (err) {
+    console.error("Product load error:", err);
+  }
+}
 
 /* ================= LOAD ORDERS ================= */
 
 async function loadOrders() {
+  try {
+    const res = await fetch(`${API_URL}/api/orders`);
+    orders = await res.json();
 
-try {
+    renderOrders();
+    updateSummary();
 
-
-const res = await fetch("/api/orders");
-orders = await res.json();
-
-renderOrders();
-updateSummary();
-
-
-} catch (err) {
-
-
-console.error("Order load error:", err);
-
-
-}
-
+  } catch (err) {
+    console.error("Order load error:", err);
+  }
 }
 
 /* ================= SUMMARY ================= */
 
 function updateSummary() {
-
-document.getElementById("total-products").textContent = products.length;
-document.getElementById("total-orders").textContent = orders.length;
-
+  document.getElementById("total-products").textContent = products.length;
+  document.getElementById("total-orders").textContent = orders.length;
 }
 
 /* ================= RENDER PRODUCTS ================= */
 
 function renderProducts() {
+  const list = document.getElementById("product-list");
+  list.innerHTML = "";
 
-const list = document.getElementById("product-list");
-list.innerHTML = "";
-
-products.forEach((p, index) => {
-
-list.innerHTML += `
-  <div class="product-card">
-
-    <img src="${p.image}" />
-
-    <h3>${p.name}</h3>
-
-    <p>₹${p.price}</p>
-
-    <button class="btn" onclick="editProduct(${index})">Edit</button>
-
-    <button class="btn" onclick="deleteProduct(${index})">Delete</button>
-
-  </div>
-`;
-
-});
-
+  products.forEach((p, index) => {
+    list.innerHTML += `
+      <div class="product-card">
+        <img src="${p.image}" />
+        <h3>${p.name}</h3>
+        <p>₹${p.price}</p>
+        <button class="btn" onclick="editProduct(${index})">Edit</button>
+        <button class="btn" onclick="deleteProduct('${p._id}')">Delete</button>
+      </div>
+    `;
+  });
 }
 
 /* ================= RENDER ORDERS ================= */
 
 function renderOrders() {
+  const tbody = document.querySelector("#order-table tbody");
+  tbody.innerHTML = "";
 
-const tbody = document.querySelector("#order-table tbody");
-tbody.innerHTML = "";
+  orders.forEach(order => {
 
-orders.forEach(order => {
+    const options = ORDER_STATUSES.map(
+      s => `<option ${order.status === s ? "selected" : ""}>${s}</option>`
+    ).join("");
 
-
-const options = ORDER_STATUSES.map(
-  s => `<option ${order.status === s ? "selected" : ""}>${s}</option>`
-).join("");
-
-tbody.innerHTML += `
-  <tr>
-
-    <td>${order.orderId}</td>
-
-    <td>${order.customer}</td>
-
-    <td>₹${order.total}</td>
-
-    <td>
-      <select id="status-${order.orderId}">
-        ${options}
-      </select>
-    </td>
-
-    <td>
-
-      <button class="btn"
-      onclick="updateOrderStatus('${order.orderId}')">
-      Update
-      </button>
-
-      <button class="btn"
-      onclick="deleteOrder('${order._id}')">
-      Delete
-      </button>
-
-    </td>
-
-  </tr>
-`;
-
-
-});
-
+    tbody.innerHTML += `
+      <tr>
+        <td>${order.orderId}</td>
+        <td>${order.customer}</td>
+        <td>₹${order.total}</td>
+        <td>
+          <select id="status-${order.orderId}">
+            ${options}
+          </select>
+        </td>
+        <td>
+          <button class="btn" onclick="updateOrderStatus('${order.orderId}')">
+            Update
+          </button>
+          <button class="btn" onclick="deleteOrder('${order._id}')">
+            Delete
+          </button>
+        </td>
+      </tr>
+    `;
+  });
 }
 
 /* ================= ADD PRODUCT ================= */
@@ -129,155 +109,135 @@ tbody.innerHTML += `
 document.getElementById("product-form")
 .addEventListener("submit", async e => {
 
-e.preventDefault();
+  e.preventDefault();
 
-const file = document.getElementById("product-image").files[0];
+  const file = document.getElementById("product-image").files[0];
 
-const reader = new FileReader();
+  if (!file) {
+    alert("Please select an image");
+    return;
+  }
 
-reader.onload = async () => {
+  const reader = new FileReader();
 
+  reader.onload = async () => {
 
-const newProduct = {
+    const newProduct = {
+      name: document.getElementById("product-name").value,
+      price: document.getElementById("product-price").value,
+      stock: document.getElementById("product-stock").value,
+      category: document.getElementById("product-category").value,
+      description: document.getElementById("product-description").value,
+      image: reader.result
+    };
 
-  name: document.getElementById("product-name").value,
-  price: document.getElementById("product-price").value,
-  stock: document.getElementById("product-stock").value,
-  category: document.getElementById("product-category").value,
-  description: document.getElementById("product-description").value,
-  image: reader.result
+    try {
+      const res = await fetch(`${API_URL}/api/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newProduct)
+      });
 
-};
+      const data = await res.json();
+      console.log(data);
 
-products.push(newProduct);
+      alert("Product added successfully ✅");
 
-localStorage.setItem(
-  "products",
-  JSON.stringify(products)
-);
+      loadProducts();
+      document.getElementById("product-form").reset();
 
-await fetch("/api/products", {
+    } catch (err) {
+      console.error("Product add error:", err);
+    }
+  };
 
-  method: "POST",
-
-  headers: {
-    "Content-Type": "application/json"
-  },
-
-  body: JSON.stringify(newProduct)
-
-});
-
-renderProducts();
-updateSummary();
-
-document.getElementById("product-form").reset();
-
-
-};
-
-reader.readAsDataURL(file);
-
+  reader.readAsDataURL(file);
 });
 
 /* ================= UPDATE ORDER STATUS ================= */
 
 async function updateOrderStatus(orderId) {
+  const status = document.getElementById(`status-${orderId}`).value;
 
-const status = document.getElementById(`status-${orderId}`).value;
+  try {
+    const res = await fetch(`${API_URL}/api/orders/status/${orderId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status })
+    });
 
-try {
+    const data = await res.json();
 
+    if (data.success) {
+      alert("Order status updated");
+      loadOrders();
+    }
 
-const res = await fetch(
-  `/api/orders/status/${orderId}`,
-  {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ status })
+  } catch (error) {
+    console.error("Update failed:", error);
   }
-);
-
-const data = await res.json();
-
-if (data.success) {
-
-  alert("Order status updated");
-  loadOrders();
-
-}
-
-
-} catch (error) {
-
-console.error("Update failed:", error);
-
-
-}
-
 }
 
 /* ================= DELETE ORDER ================= */
 
 async function deleteOrder(id) {
+  try {
+    await fetch(`${API_URL}/api/orders/${id}`, {
+      method: "DELETE"
+    });
 
-try {
+    loadOrders();
 
-
-await fetch(`/api/orders/${id}`, {
-  method: "DELETE"
-});
-
-loadOrders();
-
-
-} catch (err) {
-
-
-console.error("Delete error:", err);
-
-
-}
-
+  } catch (err) {
+    console.error("Delete error:", err);
+  }
 }
 
 /* ================= EDIT PRODUCT ================= */
 
-function editProduct(index) {
+async function editProduct(index) {
+  const newPrice = prompt("Enter new price");
 
-const newPrice = prompt("Enter new price");
+  if (!newPrice) return;
 
-if (!newPrice) return;
+  const product = products[index];
 
-products[index].price = newPrice;
+  try {
+    await fetch(`${API_URL}/api/products/${product._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ price: newPrice })
+    });
 
-localStorage.setItem(
-"products",
-JSON.stringify(products)
-);
+    loadProducts();
 
-renderProducts();
-
+  } catch (err) {
+    console.error("Edit failed:", err);
+  }
 }
 
 /* ================= DELETE PRODUCT ================= */
 
-function deleteProduct(index) {
+async function deleteProduct(id) {
+  try {
+    await fetch(`${API_URL}/api/products/${id}`, {
+      method: "DELETE"
+    });
 
-products.splice(index, 1);
+    loadProducts();
 
-localStorage.setItem(
-"products",
-JSON.stringify(products)
-);
-
-renderProducts();
-
+  } catch (err) {
+    console.error("Delete failed:", err);
+  }
 }
 
 /* ================= INIT ================= */
 
-renderProducts();
+loadProducts();
 loadOrders();
