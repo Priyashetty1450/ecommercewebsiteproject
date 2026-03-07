@@ -14,10 +14,6 @@ let pollingInterval = null;
 
 const $ = (id) => document.getElementById(id);
 
-function getToken() {
-  return localStorage.getItem("token");
-}
-
 function formatDate(dateString) {
   if (!dateString) return "N/A";
 
@@ -48,7 +44,6 @@ function hideError() {
 async function trackOrder() {
 
   const orderId = $("orderIdInput").value.trim();
-  const email = $("emailInput").value.trim();
 
   if (!orderId) {
     return showError("Enter Order ID");
@@ -58,13 +53,7 @@ async function trackOrder() {
 
   try {
 
-    let url = `${API_BASE}/orders/track/${orderId}`;
-
-    const res = await fetch(url, {
-      headers: getToken()
-        ? { Authorization: `Bearer ${getToken()}` }
-        : {}
-    });
+    const res = await fetch(`${API_BASE}/orders/track/${orderId}`);
 
     const data = await res.json();
 
@@ -73,10 +62,8 @@ async function trackOrder() {
     }
 
     hideError();
-
     renderOrder(data);
-
-    startLiveTracking(orderId, email);
+    startLiveTracking(orderId);
 
   } catch {
     showError("Server error. Try again.");
@@ -195,12 +182,7 @@ async function silentRefresh(orderId) {
 
   try {
 
-    const res = await fetch(`${API_BASE}/orders/track/${orderId}`, {
-      headers: getToken()
-        ? { Authorization: `Bearer ${getToken()}` }
-        : {}
-    });
-
+    const res = await fetch(`${API_BASE}/orders/track/${orderId}`);
     const data = await res.json();
 
     if (res.ok) {
