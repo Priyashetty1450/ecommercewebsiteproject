@@ -100,8 +100,8 @@ padding:40px;
 <p><strong>Date:</strong> <span id="date"></span></p>
 </div>
 
-<a href="../home/Landing.html" class="btn">Continue Shopping</a>
-<a href="../orders/track-order.html" class="btn btn-secondary">Track Order</a>
+<a href="/pages/home/Landing.html" class="btn">Continue Shopping</a>
+<a id="trackBtn" href="#" class="btn btn-secondary">Track Order</a>
 
 </div>
 
@@ -120,7 +120,7 @@ async function loadOrder() {
 
   if (!orderId) {
     alert("Invalid order access");
-    window.location.href = "../home/Landing.html";
+    window.location.href = "/pages/home/Landing.html";
     return;
   }
 
@@ -143,10 +143,7 @@ async function loadOrder() {
     document.getElementById("successBox").style.display = "block";
 
     document.getElementById("orderId").innerText = data.orderId;
-
-    document.getElementById("transactionId").innerText =
-      data.transactionId || "COD";
-
+    document.getElementById("transactionId").innerText = data.transactionId || "COD";
     document.getElementById("amount").innerText = data.total;
 
     document.getElementById("paymentMethod").innerText =
@@ -159,29 +156,21 @@ async function loadOrder() {
         day:"numeric"
       });
 
-    document.querySelector(".btn-secondary").href =
-      `../orders/track-order.html?orderId=${data.orderId}`;
+    document.getElementById("trackBtn").href =
+      `/pages/orders/track-order.html?orderId=${data.orderId}`;
 
     localStorage.removeItem("cart");
 
   } catch {
 
     alert("Failed to load order");
-    window.location.href = "../home/Landing.html";
+    window.location.href = "/pages/home/Landing.html";
   }
 }
-
-/* ================= INIT ================= */
 
 loadOrder();
 
 </script>
-
-<!-- FOOTER -->
-<div id="footer"></div>
-
-<!-- LOAD FOOTER -->
-<script src="../../js/loadFooter.js"></script>
 
 </body>
 </html>
