@@ -1,6 +1,6 @@
 /* ================= CONFIG ================= */
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
 
 const state = {
   cart: [],
@@ -27,7 +27,7 @@ function requireAuth() {
   }
 }
 
-/* ================= SAFE TEXT SETTER ================= */
+/* ================= SAFE TEXT ================= */
 
 function setText(id, value) {
   const el = $(id);
@@ -46,7 +46,7 @@ function setLoading(show) {
   $("loadingOverlay")?.classList.toggle("active", show);
 }
 
-/* ================= API CLIENT ================= */
+/* ================= API ================= */
 
 async function api(url, options = {}) {
 
@@ -90,13 +90,13 @@ async function init() {
 
   } catch (err) {
     showToast(err.message);
-  }
-  finally {
+
+  } finally {
     setLoading(false);
   }
 }
 
-/* ================= LOAD PAYMENT CONFIG ================= */
+/* ================= PAYMENT CONFIG ================= */
 
 async function loadPaymentConfig() {
 
@@ -120,7 +120,7 @@ async function loadCart() {
   }
 }
 
-/* ================= RENDER SUMMARY ================= */
+/* ================= SUMMARY ================= */
 
 function renderSummary() {
 
@@ -144,7 +144,7 @@ function renderSummary() {
   });
 }
 
-/* ================= CALCULATE TOTALS ================= */
+/* ================= TOTALS ================= */
 
 async function calculateTotals() {
 
@@ -172,11 +172,10 @@ async function calculateTotals() {
   );
 
   setText("summaryTax", state.totals.taxAmount);
-
   setText("summaryTotal", state.totals.total);
 }
 
-/* ================= SHIPPING VALIDATION ================= */
+/* ================= SHIPPING ================= */
 
 function getShippingData() {
 
@@ -197,7 +196,7 @@ function getShippingData() {
   return data;
 }
 
-/* ================= CONTINUE TO PAYMENT ================= */
+/* ================= CONTINUE ================= */
 
 function goToPayment() {
 
@@ -251,11 +250,10 @@ async function placeOrder() {
 
     await createOrder(shipping, "cash_on_delivery");
 
-  }
-  catch (err) {
+  } catch (err) {
     showToast(err.message);
-  }
-  finally {
+
+  } finally {
     state.isPlacingOrder = false;
   }
 }
@@ -268,7 +266,9 @@ async function startRazorpay(shipping) {
 
   const order = await api("/payment/create-order", {
     method: "POST",
-    body: JSON.stringify({ amount: state.totals.total })
+    body: JSON.stringify({
+      amount: state.totals.total
+    })
   });
 
   setLoading(false);
@@ -310,8 +310,8 @@ async function createOrder(shipping, method, paymentId = null) {
 
   if (data.success) {
 
-window.location.href =
-`${window.location.origin}/pages/checkout/success.html?orderId=${data.order.orderId}`;
+    window.location.href =
+      `${window.location.origin}/pages/checkout/success.html?orderId=${data.order.orderId}`;
 
   } else {
     throw new Error("Order failed");
