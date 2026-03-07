@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * Notification Service
- * Production Ready Email + SMS
+ * Gmail Final Stable Version
  * ============================================================
  */
 
@@ -17,19 +17,14 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
 }
 
 /* ============================================================
-   TRANSPORTER (RENDER + GMAIL FIXED)
+   TRANSPORTER
 ============================================================ */
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+    service: "gmail",
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
     }
 });
 
@@ -37,9 +32,13 @@ const transporter = nodemailer.createTransport({
    VERIFY CONNECTION
 ============================================================ */
 
-transporter.verify()
-    .then(() => console.log("✅ Email server ready"))
-    .catch(err => console.error("❌ Email transporter failed:", err.message));
+transporter.verify((error) => {
+    if (error) {
+        console.error("❌ Email transporter failed:", error.message);
+    } else {
+        console.log("✅ Email server ready");
+    }
+});
 
 /* ============================================================
    EMAIL CONFIG
@@ -214,9 +213,7 @@ async function sendOrderConfirmationSMS(order) {
 
     console.log(`📱 SMS sent to ${order.phone}`);
 
-    return {
-        success: true
-    };
+    return { success: true };
 }
 
 async function sendShippingNotificationSMS(order) {
@@ -225,9 +222,7 @@ async function sendShippingNotificationSMS(order) {
 
     console.log(`📦 Shipping SMS sent to ${order.phone}`);
 
-    return {
-        success: true
-    };
+    return { success: true };
 }
 
 /* ============================================================
