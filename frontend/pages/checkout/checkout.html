@@ -6,13 +6,13 @@
 
   <title>Checkout</title>
 
-  <!-- AUTH PROTECTION -->
+  <!-- AUTH -->
   <script src="../../js/auth.js"></script>
   <script>
     requireLogin();
   </script>
 
-  <!-- GLOBAL CSS -->
+  <!-- CSS -->
   <link rel="stylesheet" href="../../css/ii.css">
   <link rel="stylesheet" href="../../css/checkout.css">
 
@@ -27,10 +27,7 @@
 
 <body>
 
-<!-- GLOBAL HEADER -->
 <div id="header"></div>
-
-<!-- ================= CHECKOUT ================= -->
 
 <div class="checkout-container">
 
@@ -51,7 +48,7 @@
       <input id="state" placeholder="State" required>
       <input id="zipCode" placeholder="Pincode" required>
 
-      <button class="checkout-btn" onclick="goToPayment()">
+      <button type="button" class="checkout-btn" onclick="goToPayment()">
         Continue to Payment
       </button>
 
@@ -72,7 +69,7 @@
           Pay with Razorpay
         </div>
 
-        <button class="checkout-btn" onclick="placeOrder()">
+        <button type="button" class="checkout-btn" onclick="placeOrder()">
           Place Order
         </button>
 
@@ -80,20 +77,17 @@
 
     </div>
 
-    <!-- ORDER SUMMARY -->
+    <!-- SUMMARY -->
     <div class="order-summary">
 
       <h3>Order Summary</h3>
 
-      <!-- CART ITEMS -->
       <div id="summaryItems"></div>
 
       <hr>
 
       <p>Subtotal: ₹<span id="summarySubtotal">0</span></p>
-
       <p>Shipping: <span id="summaryShipping">₹0</span></p>
-
       <p>GST (18%): ₹<span id="summaryTax">0</span></p>
 
       <hr>
@@ -106,22 +100,13 @@
 
 </div>
 
-<!-- OPTIONAL LOADER -->
-<div id="loadingOverlay" class="loading-overlay">
+<!-- LOADER -->
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
   <div class="spinner"></div>
 </div>
 
-<!-- LOAD GLOBAL HEADER -->
 <script src="../../js/loadHeader.js"></script>
-
-<!-- CHECKOUT LOGIC -->
 <script src="../../js/checkout.js"></script>
-
-<!-- FOOTER -->
-<div id="footer"></div>
-
-<!-- LOAD FOOTER -->
-<script src="../../js/loadFooter.js"></script>
 
 </body>
 </html>
