@@ -1,244 +1,248 @@
-const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
+const API_URL = "https://ecommercewebsiteproject.onrender.com/api/auth";
 
-const STATUS_ORDER = [
-  "Order Placed",
-  "Order Packed",
-  "Order Shipped",
-  "Out for Delivery",
-  "Delivered"
-];
+/* ================= MESSAGE ================= */
+function showMessage(text, type = "error") {
+  const msg = document.getElementById("message");
+  if (!msg) return;
 
-let pollingInterval = null;
-
-/* ================= HELPERS ================= */
-
-const $ = (id) => document.getElementById(id);
-
-function getToken() {
-  return localStorage.getItem("token");
+  msg.style.display = "block";
+  msg.className = `message ${type}`;
+  msg.innerText = text;
 }
 
-function formatDate(dateString) {
-  if (!dateString) return "N/A";
+/* ================= CHECK AUTH ================= */
+function checkAuth() {
+  const token = localStorage.getItem("token");
 
-  return new Date(dateString).toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
-}
+  if (token) {
+    const role = localStorage.getItem("role");
 
-/* ================= UI STATES ================= */
-
-function showLoader() {
-  $("orderResult").classList.remove("active");
-  $("errorMessage").classList.remove("active");
-}
-
-function showError(msg) {
-  $("errorText").innerText = msg;
-  $("errorMessage").classList.add("active");
-}
-
-function hideError() {
-  $("errorMessage").classList.remove("active");
-}
-
-/* ================= TRACK ORDER ================= */
-
-async function trackOrder() {
-
-  const orderId = $("orderIdInput").value.trim();
-  const email = $("emailInput").value.trim();
-
-  if (!orderId) {
-    return showError("Enter Order ID");
+    if (role === "admin") {
+      window.location.href = "/pages/admin/admin.html";
+    } else {
+      window.location.href = "/pages/home/Landing.html";
+    }
   }
+}
 
-  showLoader();
+/* ================= LOGOUT ================= */
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  window.location.href = "/pages/auth/login.html";
+}
+
+/* ================= SIGNUP ================= */
+async function signup(e) {
+  e.preventDefault();
+
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!username || !email || !password) {
+    return showMessage("All fields are required");
+  }
 
   try {
-
-    let url = `${API_BASE}/orders/track/${orderId}`;
-
-    if (!getToken()) {
-      if (!email) return showError("Enter your email");
-      url += `?email=${encodeURIComponent(email)}`;
-    }
-
-    const res = await fetch(url, {
-      headers: getToken()
-        ? { Authorization: `Bearer ${getToken()}` }
-        : {}
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return showError(data.message || "Order not found");
-    }
-
-    hideError();
-
-    renderOrder(data);
-
-    startLiveTracking(orderId, email);
-
-  } catch {
-
-    showError("Server error. Try again.");
-  }
-}
-
-/* ================= RENDER ORDER ================= */
-
-function renderOrder(order) {
-
-  $("orderResult").classList.add("active");
-
-  $("resultOrderId").innerText = order.orderId;
-  $("resultCustomer").innerText = order.customer || "N/A";
-  $("resultDate").innerText = formatDate(order.createdAt);
-  $("resultTotal").innerText = `₹${order.total || 0}`;
-
-  if (order.items && order.items.length) {
-
-    $("resultProducts").innerText =
-      order.items.map(i => i.name).join(", ");
-
-    $("resultQuantity").innerText =
-      order.items.reduce((sum, i) => sum + i.quantity, 0);
-
-  } else {
-
-    $("resultProducts").innerText = order.product || "N/A";
-    $("resultQuantity").innerText = order.quantity || 0;
-  }
-
-  if (order.shippingAddress) {
-
-    const a = order.shippingAddress;
-
-    $("resultAddress").innerText =
-      `${a.street || ""}, ${a.city || ""}, ${a.state || ""} - ${a.zipCode || ""}`;
-
-    $("shippingAddressSection").style.display = "block";
-  }
-
-  renderTimeline(order);
-}
-
-/* ================= TIMELINE ================= */
-
-function renderTimeline(order) {
-
-  const container = $("statusTimeline");
-  container.innerHTML = "";
-
-  const history = order.statusHistory || [];
-  const currentStatus = order.status;
-
-  if (history.length) {
-
-    history.forEach((s, i) => {
-
-      const div = document.createElement("div");
-
-      div.className =
-        "timeline-item " +
-        (i === history.length - 1 ? "active" : "completed");
-
-      div.innerHTML = `
-        <div class="timeline-content">
-          <h4>${s.status}</h4>
-          <p>${s.note || ""}</p>
-          <span>${formatDate(s.timestamp)}</span>
-        </div>
-      `;
-
-      container.appendChild(div);
-    });
-
-  } else {
-
-    const currentIndex = STATUS_ORDER.indexOf(currentStatus);
-
-    STATUS_ORDER.forEach((status, i) => {
-
-      const div = document.createElement("div");
-
-      let cls = "";
-
-      if (i < currentIndex) cls = "completed";
-      if (i === currentIndex) cls = "active";
-
-      div.className = `timeline-item ${cls}`;
-
-      div.innerHTML = `
-        <div class="timeline-content">
-          <h4>${status}</h4>
-        </div>
-      `;
-
-      container.appendChild(div);
-    });
-  }
-}
-
-/* ================= LIVE TRACKING ================= */
-
-function startLiveTracking(orderId, email) {
-
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-  }
-
-  pollingInterval = setInterval(() => {
-    silentRefresh(orderId, email);
-  }, 15000);
-}
-
-async function silentRefresh(orderId, email) {
-
-  try {
-
-    let url = `${API_BASE}/orders/track/${orderId}`;
-
-    if (!getToken()) {
-      url += `?email=${encodeURIComponent(email)}`;
-    }
-
-    const res = await fetch(url, {
-      headers: getToken()
-        ? { Authorization: `Bearer ${getToken()}` }
-        : {}
+    const res = await fetch(`${API_URL}/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, password })
     });
 
     const data = await res.json();
 
     if (res.ok) {
-      renderTimeline(data);
+      showMessage("Signup successful → Redirecting to login", "success");
+
+      setTimeout(() => {
+        window.location.href = "/pages/auth/login.html";
+      }, 1500);
+
+    } else {
+      showMessage(data.message);
     }
 
-  } catch {}
+  } catch (err) {
+    console.error(err);
+    showMessage("Server error");
+  }
 }
 
-/* ================= ENTER KEY ================= */
+/* ================= LOGIN ================= */
+async function login(e) {
+  e.preventDefault();
 
-$("orderIdInput")?.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    trackOrder();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!username || !password) {
+    return showMessage("All fields are required");
   }
-});
 
-/* ================= INIT ================= */
+  try {
+    const res = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
-window.addEventListener("load", () => {
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+
+      showMessage("Login successful", "success");
+
+      setTimeout(() => {
+        if (data.role === "admin") {
+          window.location.href = "/pages/admin/admin.html";
+        } else {
+          window.location.href = "/pages/home/Landing.html";
+        }
+      }, 1000);
+
+    } else {
+      showMessage(data.message || "Login failed");
+    }
+
+  } catch (err) {
+    console.error(err);
+    showMessage("Server error");
+  }
+}
+
+/* ================= GOOGLE LOGIN ================= */
+function googleLogin() {
+  window.location.href = "https://ecommercewebsiteproject.onrender.com/api/auth/google";
+}
+
+/* ================= PAGE LOAD LOGIC ================= */
+document.addEventListener("DOMContentLoaded", () => {
 
   const params = new URLSearchParams(window.location.search);
-  const orderId = params.get("orderId");
 
-  if (orderId) {
-    $("orderIdInput").value = orderId;
-    trackOrder();
+  /* Google token capture */
+  const googleToken = params.get("token");
+
+  if (googleToken) {
+    localStorage.setItem("token", googleToken);
+    localStorage.setItem("role", "user");
+
+    window.location.href = "/pages/home/Landing.html";
+    return;
+  }
+
+  /* Reset password page */
+  const resetToken = params.get("token");
+
+  const emailForm = document.getElementById("emailForm");
+  const passwordForm = document.getElementById("passwordForm");
+  const pageTitle = document.getElementById("pageTitle");
+
+  if (resetToken && passwordForm && emailForm) {
+    pageTitle.innerText = "Set New Password";
+    emailForm.style.display = "none";
+    passwordForm.style.display = "block";
   }
 });
+
+/* ================= SEND RESET LINK ================= */
+async function sendResetLink(event) {
+  event.preventDefault();
+
+  const email = document.getElementById("email").value.trim();
+
+  if (!email) {
+    return showMessage("Enter your email");
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+    showMessage(data.message, "success");
+
+  } catch (err) {
+    console.error(err);
+    showMessage("Server error");
+  }
+}
+
+/* ================= RESET PASSWORD ================= */
+async function resetPassword(event) {
+  event.preventDefault();
+
+  const token = new URLSearchParams(window.location.search).get("token");
+
+  const newPassword = document.getElementById("newPassword").value.trim();
+  const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+  if (!newPassword || !confirmPassword) {
+    return showMessage("All fields required");
+  }
+
+  if (newPassword !== confirmPassword) {
+    return showMessage("Passwords do not match");
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, newPassword })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showMessage("Password reset successful", "success");
+
+      setTimeout(() => {
+        window.location.href = "/pages/auth/login.html";
+      }, 1500);
+
+    } else {
+      showMessage(data.message);
+    }
+
+  } catch (err) {
+    console.error(err);
+    showMessage("Server error");
+  }
+}
+
+/* ================= REQUIRE LOGIN ================= */
+function requireLogin() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Please login first");
+    window.location.href = "/pages/auth/login.html";
+  }
+}
+
+/* ================= REQUIRE ADMIN ================= */
+function requireAdmin() {
+  const role = localStorage.getItem("role");
+
+  if (role !== "admin") {
+    alert("Access denied");
+    window.location.href = "/pages/home/Landing.html";
+  }
+}
+
+/* ================= REQUIRE GUEST ================= */
+function requireGuest() {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    window.location.href = "/pages/home/Landing.html";
+  }
+}
