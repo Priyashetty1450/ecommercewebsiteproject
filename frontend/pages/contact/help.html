@@ -136,6 +136,14 @@ transition:.3s;
 .btn:hover{
 background:#6f3410;
 }
+
+video{
+width:100%;
+margin-top:20px;
+border-radius:12px;
+box-shadow:0 8px 25px rgba(0,0,0,0.15);
+cursor:pointer;
+}
 </style>
 </head>
 
@@ -247,10 +255,41 @@ class="btn">
 
 </section>
 
+<!-- VIDEO SECTION -->
+<section class="resources">
+
+<h2 class="section-title">Tutorial Video</h2>
+
+<div class="resource-card">
+
+<h3>Website User Tutorial</h3>
+<p>Watch complete usage guide for the platform.</p>
+
+<video id="helpVideo" autoplay muted loop playsinline>
+<source src="../../assets/videos/help-video.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+
+</div>
+
+</section>
+
 <script src="../../js/loadHeader.js"></script>
 
 <div id="footer"></div>
 <script src="../../js/loadFooter.js"></script>
+
+<script>
+const video = document.getElementById("helpVideo");
+
+video.addEventListener("mouseenter", () => {
+    video.controls = true;
+});
+
+video.addEventListener("mouseleave", () => {
+    video.controls = false;
+});
+</script>
 
 </body>
 </html>
