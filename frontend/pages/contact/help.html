@@ -15,6 +15,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 body{
 background:#f8f9fa;
 font-family:Segoe UI, sans-serif;
+margin:0;
+padding:0;
 }
 
 .hero-help{
@@ -103,7 +105,7 @@ margin-bottom:15px;
 }
 
 .resources{
-max-width:800px;
+max-width:900px;
 margin:50px auto;
 padding:0 20px 50px;
 }
@@ -114,6 +116,7 @@ padding:30px;
 border-radius:15px;
 box-shadow:0 8px 25px rgba(0,0,0,0.08);
 text-align:center;
+margin-bottom:25px;
 }
 
 .resource-card h3{
@@ -144,6 +147,15 @@ border-radius:12px;
 box-shadow:0 8px 25px rgba(0,0,0,0.15);
 cursor:pointer;
 }
+
+iframe{
+width:100%;
+height:500px;
+border:none;
+border-radius:12px;
+margin-top:20px;
+box-shadow:0 8px 25px rgba(0,0,0,0.15);
+}
 </style>
 </head>
 
@@ -151,11 +163,13 @@ cursor:pointer;
 
 <div id="header"></div>
 
+<!-- HERO -->
 <section class="hero-help">
 <h1>Help & Support</h1>
 <p>Everything you need to use our platform smoothly and efficiently.</p>
 </section>
 
+<!-- USER GUIDE -->
 <section class="guide">
 
 <h3>User Guide</h3>
@@ -206,6 +220,7 @@ cursor:pointer;
 
 </section>
 
+<!-- HELP CATEGORY -->
 <h2 class="section-title">User Help</h2>
 
 <div class="category-grid">
@@ -236,12 +251,13 @@ cursor:pointer;
 
 </div>
 
+<!-- RESOURCES -->
 <section class="resources">
 
 <h2 class="section-title">Resources</h2>
 
+<!-- PPT -->
 <div class="resource-card">
-
 <h3>Download Introduction PPT</h3>
 <p>Access project presentation for detailed overview.</p>
 
@@ -250,12 +266,31 @@ download
 class="btn">
 <i class="fa fa-download"></i> Download PPT
 </a>
+</div>
 
+<!-- PDF DOWNLOAD -->
+<div class="resource-card">
+<h3>Download User Manual PDF</h3>
+<p>Access complete project documentation in PDF format.</p>
+
+<a href="../../assets/docs/user-manual.pdf"
+download
+class="btn">
+<i class="fa fa-file-pdf"></i> Download PDF
+</a>
+</div>
+
+<!-- PDF PREVIEW -->
+<div class="resource-card">
+<h3>PDF Preview</h3>
+<p>Read the documentation directly here.</p>
+
+<iframe src="../../assets/docs/user-manual.pdf"></iframe>
 </div>
 
 </section>
 
-<!-- VIDEO SECTION -->
+<!-- VIDEO -->
 <section class="resources">
 
 <h2 class="section-title">Tutorial Video</h2>
