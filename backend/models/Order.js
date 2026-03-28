@@ -13,6 +13,7 @@ const ORDER_STATUSES = [
 
 // Payment methods
 const PAYMENT_METHODS = [
+  'razorpay',
   'card',
   'debit_card',
   'credit_card',

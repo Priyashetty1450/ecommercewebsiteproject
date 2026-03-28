@@ -6,101 +6,247 @@
 
   <title>Checkout</title>
 
-  <!-- AUTH -->
   <script src="../../js/auth.js"></script>
   <script>
     requireLogin();
   </script>
 
-  <!-- CSS -->
   <link rel="stylesheet" href="../../css/ii.css">
   <link rel="stylesheet" href="../../css/checkout.css">
 
-  <!-- FONT AWESOME -->
   <link rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- RAZORPAY -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
 </head>
 
 <body>
 
 <div id="header"></div>
 
-<div class="checkout-container">
+<main class="checkout-shell">
 
-  <h1>Checkout</h1>
+  <section class="checkout-hero">
+    <div class="checkout-hero-copy">
+      <span class="checkout-eyebrow">Secure Checkout</span>
+      <h1>Complete Your Event Order</h1>
+      <p>
+        Finalize your decor, shamiyana, and celebration essentials with a
+        cleaner checkout flow, quick confirmation, and flexible payment options.
+      </p>
+    </div>
+
+    <div class="checkout-hero-points">
+      <div class="hero-point">
+        <i class="fa-solid fa-shield-heart"></i>
+        <span>Protected order details</span>
+      </div>
+      <div class="hero-point">
+        <i class="fa-solid fa-bolt"></i>
+        <span>Fast confirmation updates</span>
+      </div>
+      <div class="hero-point">
+        <i class="fa-solid fa-truck-fast"></i>
+        <span>Ready for doorstep delivery</span>
+      </div>
+    </div>
+  </section>
 
   <div class="checkout-grid">
 
-    <!-- SHIPPING -->
-    <div class="checkout-form">
-
-      <h3>Shipping Details</h3>
-
-      <input id="fullName" placeholder="Full Name" required>
-      <input id="phone" placeholder="Phone Number" required>
-      <input id="email" placeholder="Email" required>
-      <input id="street" placeholder="Address" required>
-      <input id="city" placeholder="City" required>
-      <input id="state" placeholder="State" required>
-      <input id="zipCode" placeholder="Pincode" required>
-
-      <button type="button" class="checkout-btn" onclick="goToPayment()">
-        Continue to Payment
-      </button>
-
-      <!-- PAYMENT -->
-      <div id="paymentSection" style="display:none">
-
-        <h3>Select Payment Method</h3>
-
-        <div class="payment-option selected"
-             data-method="cash_on_delivery"
-             onclick="selectPaymentMethod(this)">
-          Cash on Delivery
+    <section class="checkout-card checkout-form">
+      <div class="card-head">
+        <div>
+          <p class="card-step">Step 1</p>
+          <h2>Shipping Details</h2>
+          <p class="card-subtitle">
+            Enter the delivery details so we can prepare your order accurately.
+          </p>
         </div>
-
-        <div class="payment-option"
-             data-method="razorpay"
-             onclick="selectPaymentMethod(this)">
-          Pay with Razorpay
-        </div>
-
-        <button type="button" class="checkout-btn" onclick="placeOrder()">
-          Place Order
-        </button>
-
+        <span class="card-chip">Address Required</span>
       </div>
 
-    </div>
+      <div class="form-grid">
+        <label class="field field-span-2">
+          <span>Full Name</span>
+          <input id="fullName" placeholder="Enter your full name" required>
+        </label>
 
-    <!-- SUMMARY -->
-    <div class="order-summary">
+        <label class="field">
+          <span>Phone Number</span>
+          <input id="phone" placeholder="Enter phone number" required>
+        </label>
 
-      <h3>Order Summary</h3>
+        <label class="field">
+          <span>Email Address</span>
+          <input id="email" placeholder="Enter email address" required>
+        </label>
 
-      <div id="summaryItems"></div>
+        <label class="field field-span-2">
+          <span>Street Address</span>
+          <input id="street" placeholder="House number, street, area" required>
+        </label>
 
-      <hr>
+        <label class="field">
+          <span>City</span>
+          <input id="city" placeholder="Enter city" required>
+        </label>
 
-      <p>Subtotal: ₹<span id="summarySubtotal">0</span></p>
-      <p>Shipping: <span id="summaryShipping">₹0</span></p>
-      <p>GST (18%): ₹<span id="summaryTax">0</span></p>
+        <label class="field">
+          <span>State</span>
+          <input id="state" placeholder="Enter state" required>
+        </label>
 
-      <hr>
+        <label class="field">
+          <span>Pincode</span>
+          <input id="zipCode" placeholder="Enter pincode" required>
+        </label>
 
-      <h2>Total: ₹<span id="summaryTotal">0</span></h2>
+        <div class="field field-info">
+          <span>Checkout Notes</span>
+          <p>
+            We use these details only for this order, delivery updates, and
+            payment confirmation.
+          </p>
+        </div>
+      </div>
 
-    </div>
+      <div class="section-action">
+        <button type="button" class="checkout-btn" onclick="goToPayment()">
+          Continue to Payment
+        </button>
+
+        <div class="micro-points">
+          <span><i class="fa-solid fa-circle-check"></i> Secure checkout</span>
+          <span><i class="fa-solid fa-envelope"></i> Instant order updates</span>
+          <span><i class="fa-solid fa-headset"></i> Support after purchase</span>
+        </div>
+      </div>
+
+      <div id="paymentSection" class="payment-section" style="display:none">
+        <div class="card-head payment-head">
+          <div>
+            <p class="card-step">Step 2</p>
+            <h2>Select Payment Method</h2>
+            <p class="card-subtitle">
+              Choose how you want to complete this order.
+            </p>
+          </div>
+          <span class="card-chip alt">Flexible Checkout</span>
+        </div>
+
+        <div class="payment-options">
+          <button
+            type="button"
+            class="payment-option selected"
+            data-method="cash_on_delivery"
+            onclick="selectPaymentMethod(this)">
+            <span class="payment-icon">
+              <i class="fa-solid fa-money-bill-wave"></i>
+            </span>
+            <span class="payment-copy">
+              <strong>Cash on Delivery</strong>
+              <small>Confirm the order now and pay when it reaches you.</small>
+            </span>
+            <span class="payment-tag">Pay Later</span>
+          </button>
+
+          <button
+            type="button"
+            class="payment-option"
+            data-method="razorpay"
+            onclick="selectPaymentMethod(this)">
+            <span class="payment-icon">
+              <i class="fa-solid fa-qrcode"></i>
+            </span>
+            <span class="payment-copy">
+              <strong>Razorpay</strong>
+              <small>UPI, cards, netbanking, and wallet checkout in one flow.</small>
+            </span>
+            <span class="payment-tag accent">Fast Pay</span>
+          </button>
+        </div>
+
+        <p id="paymentModeNotice" class="payment-mode-notice" hidden></p>
+
+        <div class="section-action payment-action">
+          <button type="button" class="checkout-btn" onclick="placeOrder()">
+            Place Order
+          </button>
+
+          <div class="payment-assurance">
+            <div class="assurance-pill">
+              <i class="fa-solid fa-lock"></i>
+              <span>Encrypted payment handling</span>
+            </div>
+            <div class="assurance-pill">
+              <i class="fa-solid fa-bell"></i>
+              <span>Tracking updates after confirmation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="checkout-card order-summary">
+      <div class="summary-hero">
+        <p class="card-step">Order Summary</p>
+        <h2>Almost There</h2>
+        <p class="summary-caption">
+          Review your selected products and final payable amount before placing
+          the order.
+        </p>
+      </div>
+
+      <div id="summaryItems" class="summary-items"></div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-totals">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong>Rs. <span id="summarySubtotal">0</span></strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Shipping</span>
+          <strong><span id="summaryShipping">Rs. 0</span></strong>
+        </div>
+
+        <div class="summary-row">
+          <span>GST (18%)</span>
+          <strong>Rs. <span id="summaryTax">0</span></strong>
+        </div>
+
+        <div class="summary-row total">
+          <span>Total</span>
+          <strong>Rs. <span id="summaryTotal">0</span></strong>
+        </div>
+      </div>
+
+      <div class="summary-reassurance">
+        <div class="reassurance-item">
+          <i class="fa-solid fa-box-open"></i>
+          <div>
+            <strong>Order review</strong>
+            <p>We confirm product availability before dispatch.</p>
+          </div>
+        </div>
+
+        <div class="reassurance-item">
+          <i class="fa-solid fa-message"></i>
+          <div>
+            <strong>Updates included</strong>
+            <p>Track your order status after checkout from the success page.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
 
   </div>
 
-</div>
+</main>
 
-<!-- LOADER -->
 <div id="loadingOverlay" class="loading-overlay" style="display:none;">
   <div class="spinner"></div>
 </div>

@@ -7,6 +7,7 @@ const COMPANY_NAME =
   process.env.EMAIL_COMPANY_NAME ||
   "Shri Manjunatha Shamiyana Works & Events";
 const RESEND_TEST_FROM = "onboarding@resend.dev";
+const RESEND_USER_AGENT = "shri-manjunatha-ecommerce/1.0";
 
 let smtpTransporter;
 let startupNoticeLogged = false;
@@ -34,6 +35,10 @@ function getMailTransport() {
   }
 
   return process.env.RESEND_API_KEY ? "resend" : "smtp";
+}
+
+function isProductionLikeEnvironment() {
+  return process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
 }
 
 function formatMailbox(defaultName, value) {
@@ -76,7 +81,9 @@ function getFromAddress(defaultName = COMPANY_NAME) {
     return (
       formatMailbox(defaultName, process.env.RESEND_FROM_EMAIL) ||
       formatMailbox(defaultName, process.env.EMAIL_FROM) ||
-      formatMailbox(defaultName, RESEND_TEST_FROM)
+      (!isProductionLikeEnvironment()
+        ? formatMailbox(defaultName, RESEND_TEST_FROM)
+        : undefined)
     );
   }
 
@@ -117,9 +124,15 @@ function logStartupNotice() {
     }
 
     if (!process.env.RESEND_FROM_EMAIL && !process.env.EMAIL_FROM) {
-      console.warn(
-        `Resend sender address is not configured. Falling back to ${RESEND_TEST_FROM}. Add RESEND_FROM_EMAIL for production delivery.`
-      );
+      if (isProductionLikeEnvironment()) {
+        console.warn(
+          "Resend sender address is not configured. Add RESEND_FROM_EMAIL with a verified domain to improve deliverability."
+        );
+      } else {
+        console.warn(
+          `Resend sender address is not configured. Falling back to ${RESEND_TEST_FROM}. Add RESEND_FROM_EMAIL for production delivery.`
+        );
+      }
     }
 
     return;
@@ -198,6 +211,7 @@ function postJson(url, payload, headers = {}) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "User-Agent": RESEND_USER_AGENT,
           ...headers
         }
       },
@@ -250,8 +264,19 @@ async function sendWithResend(message) {
   }
 
   try {
+    const fromAddress = message.from || getFromAddress();
+
+    if (!fromAddress) {
+      return {
+        success: false,
+        provider: "resend",
+        error:
+          "Resend sender address is missing. Set RESEND_FROM_EMAIL to a verified domain email address."
+      };
+    }
+
     const payload = {
-      from: message.from || getFromAddress() || formatMailbox(COMPANY_NAME, RESEND_TEST_FROM),
+      from: fromAddress,
       to: Array.isArray(message.to) ? message.to : [message.to],
       subject: message.subject
     };

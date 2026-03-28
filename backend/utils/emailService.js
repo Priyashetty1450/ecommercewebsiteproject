@@ -20,7 +20,15 @@ async function sendResetEmail(to, resetLink) {
         <p>This link will expire in 1 hour.</p>
         <p>If you did not request this, ignore this email.</p>
       </div>
-    `
+    `,
+    text: `Password Reset Request
+
+Open this link to reset your password:
+${resetLink}
+
+This link will expire in 1 hour.
+
+If you did not request this, ignore this email.`
   });
 
   if (!result.success) {

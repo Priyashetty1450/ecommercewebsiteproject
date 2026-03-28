@@ -91,7 +91,7 @@ padding:40px;
 <p><strong>Error Code:</strong> <span id="errorCode"></span></p>
 <p><strong>Description:</strong> <span id="errorDescription"></span></p>
 <p><strong>Order ID:</strong> <span id="orderId"></span></p>
-<p><strong>Amount:</strong> ₹<span id="amount"></span></p>
+<p><strong>Amount:</strong> Rs. <span id="amount"></span></p>
 <p><strong>Date:</strong> <span id="date"></span></p>
 </div>
 
@@ -108,7 +108,6 @@ Continue Shopping
 <script>
 
 const API_BASE = "/api";
-
 const params = new URLSearchParams(window.location.search);
 
 const orderId = params.get("orderId");
@@ -132,7 +131,6 @@ new Date().toLocaleDateString("en-IN",{
 year:"numeric",month:"long",day:"numeric"
 });
 
-/* RETRY BUTTON */
 const retryBtn = document.getElementById("retryBtn");
 
 if (orderId) {
@@ -143,7 +141,6 @@ retryBtn.href = "../checkout/checkout.html";
 
 }
 
-/* VERIFY ORDER */
 async function verifyOrder() {
 
 if (!orderId) {
@@ -153,7 +150,7 @@ return;
 
 try {
 
-const res = await fetch(`${API_BASE}/orders/${orderId}`);
+const res = await fetch(`${API_BASE}/orders/track/${orderId}`);
 
 if (!res.ok) {
 initUI();
@@ -162,8 +159,7 @@ return;
 
 const data = await res.json();
 
-/* If already paid → redirect to success */
-if (data.order.paymentStatus === "paid") {
+if (data.paymentStatus === "completed") {
 window.location.href =
 `../checkout/success.html?orderId=${orderId}`;
 return;
@@ -181,11 +177,8 @@ verifyOrder();
 
 </script>
 
-
-<!-- FOOTER -->
 <div id="footer"></div>
 
-<!-- LOAD FOOTER -->
 <script src="../../js/loadFooter.js"></script>
 
 </body>

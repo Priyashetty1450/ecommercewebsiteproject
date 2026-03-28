@@ -143,7 +143,8 @@ async function loadOrder() {
     document.getElementById("successBox").style.display = "block";
 
     document.getElementById("orderId").innerText = data.orderId;
-    document.getElementById("transactionId").innerText = data.transactionId || "COD";
+    document.getElementById("transactionId").innerText =
+      data.transactionId || data.paymentId || "COD";
     document.getElementById("amount").innerText = data.total;
 
     document.getElementById("paymentMethod").innerText =

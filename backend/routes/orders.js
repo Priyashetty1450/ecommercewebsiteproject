@@ -1,14 +1,12 @@
+const crypto = require('crypto');
 const express = require('express');
-const router = express.Router();
-const Order = require('../models/Order');
-const Cart = require('../models/Cart');
-const Product = require('../models/Product');
 const jwt = require('jsonwebtoken');
 
-const { calculateTax } = require('../utils/taxCalculator');
+const Cart = require('../models/Cart');
+const Order = require('../models/Order');
+const Product = require('../models/Product');
 const { calculateShipping, determineZone } = require('../utils/shippingCalculator');
-const { initiatePayment, processPayment } = require('../utils/paymentGateway');
-
+const { calculateTax } = require('../utils/taxCalculator');
 const {
   sendOrderConfirmationEmail,
   sendOrderConfirmationSMS,
@@ -16,10 +14,9 @@ const {
   sendRefundConfirmationEmail
 } = require('../utils/notificationService');
 
-/* ================= AUTH MIDDLEWARE ================= */
+const router = express.Router();
 
 const authMiddleware = (req, res, next) => {
-
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -36,32 +33,78 @@ const authMiddleware = (req, res, next) => {
     req.userEmail = decoded.email || '';
 
     next();
-
   } catch {
     return res.status(401).json({ message: 'Invalid token' });
   }
 };
 
-/* ================= GET ALL ORDERS ================= */
+function verifyRazorpayPayment({
+  paymentMethod,
+  paymentId,
+  razorpayOrderId,
+  razorpaySignature,
+  isMockPayment
+}) {
+  if (paymentMethod !== 'razorpay') {
+    return {
+      paymentStatus: 'pending',
+      paymentId: null,
+      transactionId: null,
+      paidAt: null
+    };
+  }
+
+  if (process.env.MOCK_PAYMENT === 'true' || isMockPayment) {
+    return {
+      paymentStatus: 'completed',
+      paymentId,
+      transactionId: razorpayOrderId || paymentId,
+      paidAt: new Date()
+    };
+  }
+
+  if (!paymentId || !razorpayOrderId || !razorpaySignature) {
+    throw new Error('Missing Razorpay payment verification details');
+  }
+
+  if (!process.env.RAZORPAY_KEY_SECRET) {
+    throw new Error('Razorpay secret is not configured');
+  }
+
+  const expectedSignature = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .update(`${razorpayOrderId}|${paymentId}`)
+    .digest('hex');
+
+  if (expectedSignature !== razorpaySignature) {
+    throw new Error('Invalid Razorpay payment signature');
+  }
+
+  return {
+    paymentStatus: 'completed',
+    paymentId,
+    transactionId: razorpayOrderId,
+    paidAt: new Date()
+  };
+}
 
 router.get('/', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch {
-    res.status(500).json({ message: "Failed to fetch orders" });
+    res.status(500).json({ message: 'Failed to fetch orders' });
   }
 });
 
-/* ================= CALCULATE TOTALS ================= */
-
 router.post('/calculate-totals', async (req, res) => {
-
   const { items, shippingAddress, shippingMethod, couponCode } = req.body;
 
   let subtotal = 0;
 
-  items.forEach(i => subtotal += i.price * i.quantity);
+  items.forEach((item) => {
+    subtotal += item.price * item.quantity;
+  });
 
   const zone = determineZone(shippingAddress?.state || 'KA');
   const shippingData = calculateShipping(subtotal, items.length, zone);
@@ -90,12 +133,8 @@ router.post('/calculate-totals', async (req, res) => {
   });
 });
 
-/* ================= CHECKOUT ================= */
-
 router.post('/checkout', authMiddleware, async (req, res) => {
-
   try {
-
     const cart = await Cart.findOne({ userId: req.userId });
 
     if (!cart || cart.items.length === 0) {
@@ -108,7 +147,11 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       phone,
       shippingAddress,
       shippingMethod,
-      paymentMethod
+      paymentMethod = 'cash_on_delivery',
+      paymentId: incomingPaymentId,
+      razorpayOrderId,
+      razorpaySignature,
+      isMockPayment
     } = req.body;
 
     const items = cart.items;
@@ -116,32 +159,17 @@ router.post('/checkout', authMiddleware, async (req, res) => {
 
     const zone = determineZone(shippingAddress?.state || 'KA');
     const shippingData = calculateShipping(subtotal, items.length, zone);
-
     const tax = calculateTax(subtotal).taxAmount;
     const total = subtotal + shippingData.shippingCharge + tax;
 
-    const orderId = 'ORD-' + Date.now();
-
-    let paymentStatus = 'pending';
-    let paymentId = null;
-    let transactionId = null;
-
-    if (paymentMethod !== 'cash_on_delivery') {
-
-      const payment = await initiatePayment({
-        orderId,
-        amount: total
-      });
-
-      paymentId = payment.paymentId;
-
-      const result = await processPayment(paymentId, {});
-
-      if (result.success) {
-        paymentStatus = 'completed';
-        transactionId = result.transactionId;
-      }
-    }
+    const orderId = `ORD-${Date.now()}`;
+    const paymentDetails = verifyRazorpayPayment({
+      paymentMethod,
+      paymentId: incomingPaymentId,
+      razorpayOrderId,
+      razorpaySignature,
+      isMockPayment
+    });
 
     const order = new Order({
       orderId,
@@ -154,63 +182,54 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       taxAmount: tax,
       total,
       paymentMethod,
-      paymentStatus,
-      paymentId,
-      transactionId,
+      paymentStatus: paymentDetails.paymentStatus,
+      paymentId: paymentDetails.paymentId,
+      transactionId: paymentDetails.transactionId,
+      paidAt: paymentDetails.paidAt,
       shippingAddress,
       shippingMethod,
-      status: "Order Placed",
-      statusHistory: [{
-        status: "Order Placed",
-        timestamp: new Date()
-      }]
+      status: 'Order Placed',
+      statusHistory: [
+        {
+          status: 'Order Placed',
+          timestamp: new Date()
+        }
+      ]
     });
 
     const savedOrder = await order.save();
 
-    /* ================= REDUCE STOCK ================= */
-
     for (const item of items) {
-      await Product.findByIdAndUpdate(
-        item.productId,
-        { $inc: { stock: -item.quantity } }
-      );
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { stock: -item.quantity }
+      });
     }
 
-    /* ================= CLEAR CART ================= */
-
     await Cart.findOneAndDelete({ userId: req.userId });
-
-    /* ================= SEND RESPONSE FIRST ================= */
 
     res.status(201).json({
       success: true,
       order: savedOrder
     });
 
-    /* ================= BACKGROUND EMAIL ================= */
-
     sendOrderConfirmationEmail(savedOrder)
-      .then(result => {
+      .then((result) => {
         if (result?.success) {
-          console.log("Email sent:", result);
+          console.log('Email sent:', result);
           return;
         }
 
-        console.error("Email failed:", result?.error || "Unknown email error");
+        console.error('Email failed:', result?.error || 'Unknown email error');
       })
-      .catch(err => console.error("Email failed:", err));
+      .catch((err) => console.error('Email failed:', err));
 
     if (phone) {
       sendOrderConfirmationSMS(savedOrder)
-        .then(result => console.log("📱 SMS sent:", result))
-        .catch(err => console.error("❌ SMS failed:", err));
+        .then((result) => console.log('SMS sent:', result))
+        .catch((err) => console.error('SMS failed:', err));
     }
-
   } catch (err) {
-
     console.error(err);
-
     res.status(400).json({
       message: err.message,
       success: false
@@ -218,37 +237,28 @@ router.post('/checkout', authMiddleware, async (req, res) => {
   }
 });
 
-/* ================= TRACK ORDER ================= */
-
 router.get('/track/:orderId', async (req, res) => {
-
   try {
-
     const order = await Order.findOne({
       orderId: req.params.orderId
     });
 
     if (!order) {
       return res.status(404).json({
-        message: "Order not found"
+        message: 'Order not found'
       });
     }
 
     res.json(order);
-
   } catch {
     res.status(500).json({
-      message: "Server error"
+      message: 'Server error'
     });
   }
 });
 
-/* ================= UPDATE STATUS ================= */
-
 router.put('/status/:orderId', async (req, res) => {
-
   try {
-
     const { status, note } = req.body;
 
     const order = await Order.findOne({
@@ -257,7 +267,7 @@ router.put('/status/:orderId', async (req, res) => {
 
     if (!order) {
       return res.status(404).json({
-        message: "Order not found"
+        message: 'Order not found'
       });
     }
 
@@ -269,7 +279,7 @@ router.put('/status/:orderId', async (req, res) => {
 
     order.statusHistory.push({
       status,
-      note: note || "",
+      note: note || '',
       timestamp: new Date()
     });
 
@@ -279,43 +289,37 @@ router.put('/status/:orderId', async (req, res) => {
 
     res.json({
       success: true,
-      message: "Order status updated",
+      message: 'Order status updated',
       order
     });
-
   } catch {
     res.status(500).json({
       success: false,
-      message: "Server error"
+      message: 'Server error'
     });
   }
 });
-
-/* ================= DELETE ORDER ================= */
 
 router.delete('/:id', async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
-    res.json({ message: "Order deleted" });
+    res.json({ message: 'Order deleted' });
   } catch {
-    res.status(500).json({ message: "Delete failed" });
+    res.status(500).json({ message: 'Delete failed' });
   }
 });
 
-/* ================= CANCEL ORDER ================= */
-
 router.put('/cancel/:orderId', async (req, res) => {
-
   const order = await Order.findOne({
     orderId: req.params.orderId
   });
 
   if (!order) {
-    return res.status(404).json({ message: "Order not found" });
+    return res.status(404).json({ message: 'Order not found' });
   }
 
-  order.status = "Cancelled";
-  order.paymentStatus = "cancelled";
+  order.status = 'Cancelled';
+  order.paymentStatus = 'cancelled';
 
   await order.save();
 
@@ -325,20 +329,17 @@ router.put('/cancel/:orderId', async (req, res) => {
   });
 });
 
-/* ================= REFUND ================= */
-
 router.post('/:orderId/refund', async (req, res) => {
-
   const order = await Order.findOne({
     orderId: req.params.orderId
   });
 
   if (!order) {
-    return res.status(404).json({ message: "Order not found" });
+    return res.status(404).json({ message: 'Order not found' });
   }
 
-  order.status = "Refunded";
-  order.paymentStatus = "refunded";
+  order.status = 'Refunded';
+  order.paymentStatus = 'refunded';
 
   await order.save();
 
