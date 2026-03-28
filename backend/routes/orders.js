@@ -191,8 +191,15 @@ router.post('/checkout', authMiddleware, async (req, res) => {
     /* ================= BACKGROUND EMAIL ================= */
 
     sendOrderConfirmationEmail(savedOrder)
-      .then(result => console.log("📧 Email sent:", result))
-      .catch(err => console.error("❌ Email failed:", err));
+      .then(result => {
+        if (result?.success) {
+          console.log("Email sent:", result);
+          return;
+        }
+
+        console.error("Email failed:", result?.error || "Unknown email error");
+      })
+      .catch(err => console.error("Email failed:", err));
 
     if (phone) {
       sendOrderConfirmationSMS(savedOrder)
