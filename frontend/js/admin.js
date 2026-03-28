@@ -1,7 +1,7 @@
 let products = [];
 let orders = [];
 
-const API_URL = "https://ecommercewebsiteproject.onrender.com";
+const API_URL = ""; // use same origin; backend serves frontend and API under same host
 
 const ORDER_STATUSES = [
   "Order Placed",

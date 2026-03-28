@@ -112,7 +112,7 @@ async function updateCartBadge() {
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/cart", {
+    const res = await fetch("/api/cart", {
       headers: {
         Authorization: `Bearer ${token}`
       }

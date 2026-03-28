@@ -1,4 +1,4 @@
-const API_URL = "https://ecommercewebsiteproject.onrender.com/api/auth";
+const API_URL = "/api/auth";
 
 /* ================= MESSAGE ================= */
 function showMessage(text, type = "error") {
@@ -114,7 +114,7 @@ async function login(e) {
 
 /* ================= GOOGLE LOGIN ================= */
 function googleLogin() {
-  window.location.href = "https://ecommercewebsiteproject.onrender.com/api/auth/google";
+  window.location.href = "/api/auth/google";
 }
 
 /* ================= PAGE LOAD ================= */

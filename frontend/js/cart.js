@@ -1,4 +1,4 @@
-const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
+const API_BASE = '/api';
 let cartData = null;
 
 /* ================= AUTH TOKEN ================= */

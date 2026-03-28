@@ -1,5 +1,5 @@
- const API_BASE = 'http://localhost:5000/api';
-    let isLogin = true;
+const API_BASE = '/api';
+     let isLogin = true;
     let allProducts = [];
 
     // --- Authentication Logic ---
@@ -289,11 +289,9 @@ function logout() {
     }
 
     function updateCartCount(count) {
-        // Update cart count in header if element exists
-        const cartCountEl = document.querySelector('.cart-icon .cart-count');
-        if (cartCountEl) {
-            cartCountEl.textContent = count;
-        }
+        // Update cart count in header if element exists (try id, then legacy selectors)
+        const cartCountEl = document.getElementById('cart-count') || document.querySelector('.cart-icon .cart-count') || document.querySelector('.cart-badge');
+        if (cartCountEl) cartCountEl.innerText = count;
     }
 
     // addToCart function - uses API (which handles database storage)

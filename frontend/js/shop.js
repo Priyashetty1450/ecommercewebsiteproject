@@ -1,6 +1,6 @@
 /* ================= CONFIG ================= */
 
-const API_BASE = "https://ecommercewebsiteproject.onrender.com/api";
+const API_BASE = '/api';
 
 let inventory = [];
 let activeItem = null;
@@ -249,6 +249,19 @@ async function addToCart() {
 
   showToast("Item added to cart");
   closeModal("pModal");
+  // Update header cart badge if available
+  try {
+    if (typeof updateCartBadge === 'function') {
+      updateCartBadge();
+    }
+
+    if (typeof updateCartCount === 'function' && res.items) {
+      const count = res.items.reduce((sum, i) => sum + (i.quantity || 0), 0);
+      updateCartCount(count);
+    }
+  } catch (e) {
+    console.warn('Could not update cart badge:', e);
+  }
 }
 
 
