@@ -6,6 +6,7 @@ const SMTP_BLOCKED_RENDER_PORTS = new Set([25, 465, 587]);
 const COMPANY_NAME =
   process.env.EMAIL_COMPANY_NAME ||
   "Shri Manjunatha Shamiyana Works & Events";
+const RESEND_TEST_FROM = "onboarding@resend.dev";
 
 let smtpTransporter;
 let startupNoticeLogged = false;
@@ -35,6 +36,18 @@ function getMailTransport() {
   return process.env.RESEND_API_KEY ? "resend" : "smtp";
 }
 
+function formatMailbox(defaultName, value) {
+  if (!value) {
+    return undefined;
+  }
+
+  if (value.includes("<")) {
+    return value;
+  }
+
+  return `"${defaultName}" <${value}>`;
+}
+
 function getSmtpConfig() {
   const port = parseNumber(process.env.SMTP_PORT, 587);
 
@@ -57,8 +70,18 @@ function getSmtpConfig() {
 }
 
 function getFromAddress(defaultName = COMPANY_NAME) {
+  const transport = getMailTransport();
+
+  if (transport === "resend") {
+    return (
+      formatMailbox(defaultName, process.env.RESEND_FROM_EMAIL) ||
+      formatMailbox(defaultName, process.env.EMAIL_FROM) ||
+      formatMailbox(defaultName, RESEND_TEST_FROM)
+    );
+  }
+
   if (process.env.EMAIL_FROM) {
-    return process.env.EMAIL_FROM;
+    return formatMailbox(defaultName, process.env.EMAIL_FROM);
   }
 
   const smtpConfig = getSmtpConfig();
@@ -71,7 +94,12 @@ function getFromAddress(defaultName = COMPANY_NAME) {
 }
 
 function getReplyToAddress() {
-  return process.env.EMAIL_REPLY_TO || getSmtpConfig().user || undefined;
+  return (
+    process.env.EMAIL_REPLY_TO ||
+    process.env.RESEND_REPLY_TO ||
+    getSmtpConfig().user ||
+    undefined
+  );
 }
 
 function logStartupNotice() {
@@ -86,6 +114,12 @@ function logStartupNotice() {
   if (transport === "resend") {
     if (!process.env.RESEND_API_KEY) {
       console.warn("Email transport is set to Resend but RESEND_API_KEY is missing.");
+    }
+
+    if (!process.env.RESEND_FROM_EMAIL && !process.env.EMAIL_FROM) {
+      console.warn(
+        `Resend sender address is not configured. Falling back to ${RESEND_TEST_FROM}. Add RESEND_FROM_EMAIL for production delivery.`
+      );
     }
 
     return;
@@ -217,7 +251,7 @@ async function sendWithResend(message) {
 
   try {
     const payload = {
-      from: message.from || getFromAddress() || "onboarding@resend.dev",
+      from: message.from || getFromAddress() || formatMailbox(COMPANY_NAME, RESEND_TEST_FROM),
       to: Array.isArray(message.to) ? message.to : [message.to],
       subject: message.subject
     };
@@ -307,6 +341,7 @@ function getMailDiagnostics() {
     smtpPort: smtpConfig.port,
     hasSmtpCredentials: Boolean(smtpConfig.user && smtpConfig.pass),
     hasResendApiKey: Boolean(process.env.RESEND_API_KEY),
+    resendFromEmail: Boolean(process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM),
     fromAddress: getFromAddress(),
     replyTo: getReplyToAddress()
   };
