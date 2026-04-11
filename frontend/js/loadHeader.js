@@ -9,6 +9,68 @@
   }
 })();
 
+const headerAppBasePath = getHeaderAppBasePath();
+
+function getHeaderAppBasePath() {
+  if (document.currentScript?.src) {
+    const { pathname } = new URL(document.currentScript.src, window.location.href);
+    const match = pathname.match(/^(.*)\/js\/[^/]+$/);
+
+    if (match) {
+      return match[1] || "";
+    }
+  }
+
+  const frontendMatch = window.location.pathname.match(/^(.*\/frontend)(?:\/|$)/);
+  return frontendMatch?.[1] || "";
+}
+
+function withHeaderBasePath(path) {
+  if (!path || !path.startsWith("/")) return path;
+  return `${headerAppBasePath}${path}`;
+}
+
+function rewriteHeaderRootPaths(container) {
+  if (!container || !headerAppBasePath) return;
+
+  container
+    .querySelectorAll('[href^="/"], [src^="/"], [action^="/"]')
+    .forEach((element) => {
+      ["href", "src", "action"].forEach((attribute) => {
+        const value = element.getAttribute(attribute);
+
+        if (value && value.startsWith("/") && !value.startsWith("//")) {
+          element.setAttribute(attribute, withHeaderBasePath(value));
+        }
+      });
+    });
+}
+
+async function fetchHeaderMarkup() {
+  const candidateUrls = [
+    withHeaderBasePath("/components/header.html"),
+    new URL("../../components/header.html", window.location.href).pathname
+  ];
+
+  const uniqueUrls = [...new Set(candidateUrls)];
+  let lastError;
+
+  for (const url of uniqueUrls) {
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Failed to load ${url}: ${response.status}`);
+      }
+
+      return await response.text();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("Unable to load header");
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   loadHeader();
@@ -16,19 +78,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* ================= LOAD HEADER ================= */
-function loadHeader() {
-  fetch("/components/header.html")
-    .then(res => res.text())
-    .then(data => {
-      document.getElementById("header").innerHTML = data;
+async function loadHeader() {
+  const headerContainer = document.getElementById("header");
 
-      updateNavbar();
-      attachLogout();
-      updateCartBadge();
-      attachSearch();
-      attachMobileMenu();
-    })
-    .catch(err => console.log("Header load error:", err));
+  if (!headerContainer) return;
+
+  try {
+    const data = await fetchHeaderMarkup();
+    headerContainer.innerHTML = data;
+    rewriteHeaderRootPaths(headerContainer);
+
+    updateNavbar();
+    attachLogout();
+    updateCartBadge();
+    attachSearch();
+    attachMobileMenu();
+  } catch (err) {
+    console.log("Header load error:", err);
+  }
 }
 
 
@@ -69,7 +136,7 @@ function attachLogout() {
     updateNavbar();
     updateCartBadge();
 
-    window.location.href = "/pages/home/Landing.html";
+    window.location.href = withHeaderBasePath("/pages/home/Landing.html");
   });
 }
 
@@ -86,7 +153,7 @@ function attachSearch() {
     if (!query) return;
 
     window.location.href =
-      `/pages/shop/shop.html?search=${encodeURIComponent(query)}`;
+      `${withHeaderBasePath("/pages/shop/shop.html")}?search=${encodeURIComponent(query)}`;
   }
 
   searchBtn.addEventListener("click", performSearch);
